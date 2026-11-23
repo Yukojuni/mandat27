@@ -326,6 +326,31 @@ a{color:var(--blue)}
 .pl.g,.up{color:#138A4C}
 .lab.r{color:#0F6E3D}
 
+/* ───── parcours */
+.parcours .trend b{display:block;margin-bottom:6px}
+.spark{width:100%;height:auto;display:block}
+.leg{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;font-weight:800;align-items:center}
+.leg i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:4px;vertical-align:-1px}
+.pyear{margin:22px 0 8px;font-family:"Lilita One",Nunito,sans-serif;font-size:19px}
+.pyear b{background:var(--navy);color:#fff;border-radius:10px;padding:3px 9px;margin-right:6px;font-weight:400}
+.pc-item{background:#fff;border:2px solid var(--line);border-radius:18px;margin:10px 0;box-shadow:0 4px 0 var(--line)}
+.pc-item summary,.pc-item.off{display:flex;gap:12px;padding:12px 14px;cursor:pointer;list-style:none;align-items:flex-start}
+.pc-item summary::-webkit-details-marker{display:none}
+.pc-item[open]{border-color:var(--blue)}
+.pc-item small{display:block;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;opacity:.6}
+.pc-item b{display:block;font-size:15px;line-height:1.25}
+.pc-item summary p{margin:4px 0 0;font-size:14px;color:var(--blue);font-weight:800}
+.pc-item.off{opacity:.55;cursor:default}.pc-item.skip summary p{color:#6B7699}
+.ol.on{background:var(--blue);color:#fff}
+.mini{font-size:12px;font-weight:800;margin-top:4px;opacity:.85}
+.star{color:#B07D00}
+.pc-det{padding:0 14px 14px}
+.pc-opt{display:flex;gap:10px;align-items:center;padding:8px;border-radius:12px;margin:6px 0}
+.pc-opt .ol{width:30px;height:30px;font-size:16px}
+.pc-opt b{font-size:14px}.pc-opt small{text-transform:none;letter-spacing:0;font-size:12px}
+.pc-opt.mine{background:#EEF2FF;outline:2px solid var(--blue)}.pc-opt.mine .ol{background:var(--blue);color:#fff}
+.parcours>.btn.big{margin-top:18px}
+
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.affiche .in{transform:rotateY(180deg)}.stamp{transform:translate(-50%,-50%) rotate(-10deg)}.stampc{opacity:1;transform:rotate(var(--r))}.seat.yes{fill:#8B5CF6}.confetti{display:none}.reveal{transform:scale(1)}.count{display:none}.tvme{transform:translate(-50%,0)}.flash{display:none}.bolt{transform:translate(-50%,-50%)}.stampu{transform:rotate(10deg)}}
 </style>
 </head>
@@ -1144,8 +1169,8 @@ function gauges(){
   return `<div class="gauges">${bar(50+t.b*6,"Budget","#FFC800",(t.b>0?"+":"")+t.b)}${bar(50+t.c*10,"Climat","#3DDC84",(t.c>0?"+":"")+t.c)}${bar(t.n?t.soutien*100:50,"Soutiens","#8B5CF6",t.n?Math.round(t.soutien*100)+" %":"–")}</div>
   <div class="xpbar" id="xpb">${S.moi?`<span class="me">${perso("moi","happy")}</span>`:""}<b>${r.nom}</b><div class="xpt"><i style="width:${r.next?((S.xp-r.base)/(r.next-r.base)*100):100}%"></i></div><span>${S.xp} XP</span></div>`;
 }
-function topbar(){ const done=Object.keys(S.ch).length;
-  return `<div class="top"><button class="btn ghost sm" onclick="go('map')">Carte</button><div class="prog"><i style="width:${done/30*100}%"></i></div><div class="cnt">${done}/30</div></div>${gauges()}`; }
+function topbar(){ const done=Object.keys(S.ch).length, back=S.back==="parcours"&&S.screen==="q";
+  return `<div class="top"><button class="btn ghost sm" onclick="${back?"S.back=null;go('parcours')":"go('map')"}">${back?"Parcours":"Carte"}</button><div class="prog"><i style="width:${done/30*100}%"></i></div><div class="cnt">${done}/30</div></div>${gauges()}`; }
 function src(l,u){ return u?`<a class="src" href="${esc(u)}" target="_blank" rel="noopener">${esc(l)} ↗</a>`:`<span class="src off">${esc(l)}</span>`; }
 
 // ───────── écrans
@@ -1191,7 +1216,7 @@ V.map=()=>{ const nxt=Q.findIndex(q=>!S.ch[q.id]);
    <div class="path">${qs.map(({q,i},j)=>{ const st=S.ch[q.id]?"done":(i===nxt?"next":(i<nxt||nxt<0?"open":"lock"));
      return `<button class="node ${st}" style="--x:${[0,46,72,46,0,-46][j]}px" ${st==="lock"?"disabled":""} onclick="openQ(${i})">
       <span class="dot">${st==="done"?"✓":j+1}</span><span class="nt">${esc(q.theme)}</span>${st==="next"?`<span class="here">${perso(S.moi?"moi":"lea","happy")}</span>`:""}</button>`; }).join("")}</div></section>`; }).join("")}
-  ${nxt<0?`<button class="btn big gold" onclick="go('verdict')">Voir le verdict</button>`:""}</div>`; };
+  ${nxt<0?`<button class="btn big gold" onclick="go('verdict')">Voir le verdict</button><button class="btn ghost" style="margin-top:12px" onclick="go('parcours')">Revoir mon parcours</button>`:""}</div>`; };
 
 V.q=()=>{ const q=Q[S.qi], steps=stepsOf(q), st=steps[S.step];
   const dots=steps.map((s,i)=>`<i class="${i<S.step?"on":i===S.step?"cur":""}"></i>`).join("");
@@ -1287,9 +1312,34 @@ V.verdict=()=>{ const m=match(), n=totals().n;
    <div class="meter"><i style="width:${r.pct}%"></i></div><div class="pc">${r.pct} %</div><small>${r.agree}/${r.cnt} choix identiques</small>
    <button class="link" onclick="detail('${r.k}')">Détail et sources</button></div></div></div>`).join("")}</div>
   ${say("lea","Ce n'est ni un sondage ni une consigne de vote : ça compare tes choix aux positions publiques au 23 novembre 2026. Va lire leurs programmes !",{right:1,color:"red"})}
-  <div class="nav col"><button class="btn" onclick="share()">Copier mon résultat</button><button class="btn ghost" onclick="go('method')">Méthode et sources</button><button class="link" onclick="reset()">Refaire un mandat</button></div>
+  <div class="nav col"><button class="btn gold" onclick="go('parcours')">Revoir mon parcours</button><button class="btn" onclick="share()">Copier mon résultat</button><button class="btn ghost" onclick="go('method')">Méthode et sources</button><button class="link" onclick="reset()">Refaire un mandat</button></div>
   <div id="det"></div></div>`; };
 
+V.parcours=()=>{
+ const done=Q.filter(q=>S.ch[q.id]), voted=done.filter(q=>S.ch[q.id]!=="X");
+ const cons=voted.filter(q=>supporters(q,S.ch[q.id]).length>=5).length, solo=voted.filter(q=>supporters(q,S.ch[q.id]).length<=2).length;
+ const qz=Object.keys(S.quiz||{}), ok=qz.filter(k=>QUIZ[k]&&S.quiz[k]===QUIZ[k].ok).length;
+ let b=0,c=0; const pts=Q.map(q=>{ const o=S.ch[q.id]; if(o&&o!=="X"){ b+=q.opts[o].b; c+=q.opts[o].c; } return [b,c]; });
+ const W=300,H=80, xs=i=>10+i*(W-20)/29, ys=v=>H/2-v*3.2;
+ const line=(k,col)=>`<polyline fill="none" stroke="${col}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" points="${pts.map((p,i)=>xs(i).toFixed(1)+","+ys(p[k]).toFixed(1)).join(" ")}"/>`;
+ const arrow=v=>v>0?`<span class="up">▲</span>`:v<0?`<span class="down">▼</span>`:`<span class="eq">=</span>`;
+ return `<div class="screen parcours"><button class="btn ghost sm" onclick="go('verdict')">Retour au verdict</button>
+  <h2 class="pop">Mon parcours</h2>
+  ${say("karim",`Cinq ans résumés en un coup d'œil, ${TITRE()}. Touche une décision pour revoir les options et ce qu'il fallait retenir.`)}
+  <div class="grid3 pop d1"><div class="kpi"><small>Larges soutiens</small><b class="big">${cons}</b></div><div class="kpi"><small>Choix minoritaires</small><b class="big">${solo}</b></div><div class="kpi"><small>Quiz réussis</small><b class="big">${ok}/${qz.length}</b></div></div>
+  <div class="card trend pop d2"><b>Ton budget et ton climat, décision après décision</b>
+   <svg viewBox="0 0 ${W} ${H}" class="spark"><line x1="10" x2="${W-10}" y1="${H/2}" y2="${H/2}" stroke="#DDE4F7" stroke-width="2" stroke-dasharray="4 4"/>${[1,2,3,4].map(y=>`<line x1="${xs(y*6-0.5)}" x2="${xs(y*6-0.5)}" y1="4" y2="${H-4}" stroke="#EEF2FF" stroke-width="2"/>`).join("")}${line(0,"#E0A800")}${line(1,"#22B86A")}</svg>
+   <div class="leg"><span><i style="background:#E0A800"></i>Budget (${b>0?"+":""}${b})</span><span><i style="background:#22B86A"></i>Climat (${c>0?"+":""}${c})</span><span class="hint">tendances indicatives</span></div></div>
+  ${ANNEES.map((y,ai)=>`<div class="pyear"><b>${y.an}</b> ${esc(y.titre)}</div>
+   ${Q.map((q,i)=>({q,i})).filter(o=>o.q.an===ai).map(({q,i})=>{ const o=S.ch[q.id];
+     if(!o) return `<div class="pc-item off"><span class="ol">?</span><div><small>${esc(q.theme)}</small><b>${esc(q.titre)}</b><p>Pas encore décidé</p></div></div>`;
+     const sup=o==="X"?null:supporters(q,o).length, op=o==="X"?null:q.opts[o];
+     return `<details class="pc-item ${o==="X"?"skip":""}"><summary><span class="ol ${o!=="X"?"on":""}">${o==="X"?"–":o}</span><div><small>${esc(q.theme)}${S.imp[q.id]?' · <span class="star">compte double</span>':""}</small><b>${esc(q.titre)}</b>
+      <p>${o==="X"?"Sujet passé":esc(op.t)}</p>${o==="X"?"":`<div class="mini">Soutiens ${sup}/8 · Budget ${arrow(op.b)} · Climat ${q.opts.A.c||q.opts.B.c||q.opts.C.c?arrow(op.c):"–"}${QUIZ[q.id]&&S.quiz[q.id]!=null?` · Quiz ${S.quiz[q.id]===QUIZ[q.id].ok?"✓":"✗"}`:""}</div>`}</div></summary>
+      <div class="pc-det">${["A","B","C"].map(k=>`<div class="pc-opt ${k===o?"mine":""}"><span class="ol">${k}</span><div><b>${esc(q.opts[k].t)}</b><small>${supporters(q,k).length}/8 candidats</small></div></div>`).join("")}
+       <div class="card lesson"><b>À retenir</b><p>${esc(q.lecon)}</p></div>
+       <button class="btn ghost" onclick="S.back='parcours';openQ(${i})">Rouvrir le dossier</button></div></details>`; }).join("")}`).join("")}
+  <button class="btn big" onclick="go('verdict')">Retour au verdict</button></div>`; };
 V.method=()=>`<div class="screen method"><button class="btn ghost sm" onclick="go(S.prev||'home')">Retour</button>
  <h2>Comment c'est calculé</h2>
  <div class="card"><b>Les candidats</b><p>Les 8 candidats déclarés les mieux placés dans les sondages de novembre 2026 : ${KEYS.map(k=>esc(CANDS[k].nom)).join(", ")}. Leurs noms sont cachés pendant le jeu.</p></div>
@@ -1314,7 +1364,7 @@ function slide(v){ const k=["A","B","C"][+v], q=Q[S.qi]; S.pick=k; const o=q.opt
   $("#sldet").innerHTML=`<b>${esc(o.t)}</b><p><span class="pl g">Point fort</span>${esc(o.fort)}</p><p><span class="pl r">Point faible</span>${esc(o.faible)}</p><p class="rep"><span class="pl b">Ses défenseurs répondent</span>${esc(o.rep)}</p>`; $("#sldet").classList.remove("pulse"); void $("#sldet").offsetWidth; $("#sldet").classList.add("pulse"); }
 function answer(i,el){ const z=QUIZ[Q[S.qi].id]; S.quiz[Q[S.qi].id]=i; if(i===z.ok){ addXP(15,el); } render(); if(i===z.ok) burst(); else { const b=document.querySelectorAll(".qa")[i]; b&&b.classList.add("shake"); } }
 function vote(k){ const first=!S.ch[Q[S.qi].id]; S.ch[Q[S.qi].id]=k; S.pick=null; if(k!=="X"&&first) S.xp+=20; save(); if(k==="X"){ go("result"); return; } go("drop"); setTimeout(()=>go("result"),1300); }
-function next(){ const q=Q[S.qi], yd=Q.filter(x=>x.an===q.an).every(x=>S.ch[x.id]);
+function next(){ if(S.back==="parcours"){ S.back=null; go("parcours"); return; } const q=Q[S.qi], yd=Q.filter(x=>x.an===q.an).every(x=>S.ch[x.id]);
   if(yd&&S.seenYear<q.an){ S.seenYear=q.an; go("bilan"); return; } if(Q.findIndex(x=>!S.ch[x.id])<0){ go("verdict"); return; } go("map"); }
 function setAv(k,v){ S.moi[k]=v; if(k==="g"&&!S.moi.stTouched) S.moi.st=(v==="f"?"long":"short"); if(k==="st") S.moi.stTouched=1; setMoi(S.moi); const y=window.scrollY; render(); window.scrollTo(0,y); }
 function photo(){ const f=document.createElement("div"); f.className="flash"; document.body.appendChild(f); setTimeout(()=>{ f.remove(); go(Object.keys(S.ch).length?"map":"elect"); },450); }

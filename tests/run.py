@@ -121,6 +121,16 @@ def play(v, w, h, reduced, shots=False, gender="f"):
             page.locator(".affiche .link").first.click(); page.wait_for_timeout(500); check(page, v, "détail"); snap("51_detail")
             rows = page.locator(".detail tr").count()
             if rows != 31: issue(v,"détail",f"{rows-1} lignes au lieu de 30")
+            click_text(page, "Revoir mon parcours"); page.wait_for_timeout(300); check(page, v, "parcours"); snap("53_parcours")
+            n_items = page.locator("details.pc-item").count()
+            if n_items != 30: issue(v,"parcours",f"{n_items} décisions au lieu de 30")
+            page.locator("details.pc-item summary").nth(4).click(); page.wait_for_timeout(200); check(page, v, "parcours ouvert"); snap("54_parcours_ouvert")
+            if page.locator("details.pc-item[open] .pc-opt.mine").count()!=1: issue(v,"parcours","choix du joueur non surligné")
+            page.locator("details.pc-item[open] .btn").click(); page.wait_for_timeout(200)
+            if page.locator(".top .btn", has_text="Parcours").count()!=1: issue(v,"parcours","pas de retour au parcours depuis un dossier rouvert")
+            page.locator(".top .btn", has_text="Parcours").click(); page.wait_for_timeout(200)
+            if not page.locator(".screen.parcours").count(): issue(v,"parcours","retour au parcours KO")
+            page.locator(".parcours > .btn.big").click(); page.wait_for_timeout(200)
             click_text(page, "Copier mon résultat"); page.wait_for_timeout(300)
             if gender=="f" and "présidente" not in page.evaluate("document.querySelector('.toast')?.textContent || navigator.clipboard && ''") and w<500:
                 pass
