@@ -48,3 +48,10 @@ function say(id, text, opt={}){
     <div class="av">${perso(id, opt.mood||"happy", "talk")}<span class="who">${c.nom}<small>${c.role}</small></span></div>
     <div class="bub ${opt.color||""}"><p data-type>${esc(text)}</p>${opt.extra||""}</div></div>`;
 }
+
+// Personnage du joueur
+const SKINS=[["#F5D0B0","#E5B994"],["#E8B48F","#D69F79"],["#C68B5E","#B07650"],["#A86B45","#93593A"],["#7A4B30","#653C25"]];
+const HAIRS=["#15151F","#5A3A22","#C98A3B","#E07A2E","#C9CEDD","#6B34A8"];
+const STYLES=[["short","Courts"],["curly","Bouclés"],["bob","Carré"],["long","Longs"],["bun","Chignon"]];
+function setMoi(m){ const s=SKINS[m.skin]||SKINS[1];
+  CAST.moi={nom:"Toi", role:m.g==="m"?"le président":"la présidente", skin:s[0], sh:s[1], hair:HAIRS[m.hair]||HAIRS[0], st:m.st||"short", suit:"#13234B", suit2:"#0B1736", tie:m.g==="m"?"#FF4B55":null}; }

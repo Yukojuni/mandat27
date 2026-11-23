@@ -7,10 +7,13 @@ const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 const INTROS = ["jt","sms","dossier"];
 const VOTES  = ["cartes","swipe","ministres","curseur","bulletin"];
 const VOTE_NOM = {cartes:"Les 3 options",swipe:"Glisse la carte",ministres:"Conseil des ministres",curseur:"Le curseur",bulletin:"Le bulletin"};
-const RANGS = [[0,"Stagiaire de l'Élysée"],[120,"Conseiller·e"],[300,"Ministre"],[520,"Premier·e ministre"],[760,"Président·e chevronné·e"]];
+const RANGS = [[0,["Président stagiaire","Présidente stagiaire"]],[120,["Président à l'écoute","Présidente à l'écoute"]],[300,["Président informé","Présidente informée"]],[520,["Président expert","Présidente experte"]],[760,["Président chevronné","Présidente chevronnée"]]];
+const G = (m,f) => (S.moi&&S.moi.g==="m")?m:f;
+const TITRE = () => G("Monsieur le Président","Madame la Présidente");
 
 let S = load() || fresh();
-function fresh(){ return {screen:"home", qi:0, step:0, ch:{}, imp:{}, seenYear:-1, xp:0, quiz:{}, pick:null}; }
+if(S.screen==="drop") S.screen="result";
+function fresh(){ return {screen:"home", qi:0, step:0, ch:{}, imp:{}, seenYear:-1, xp:0, quiz:{}, pick:null, moi:null, vu:{}}; }
 function save(){ try{ localStorage.setItem("mandat27v2", JSON.stringify(S)); }catch(e){} }
 function load(){ try{ return JSON.parse(localStorage.getItem("mandat27v2")); }catch(e){ return null; } }
 const qIndex = id => Q.findIndex(q=>q.id===id);
@@ -32,7 +35,7 @@ function match(){
       const w=(p[2]?1:.5)*(S.imp[q.id]?2:1), a=D[o][opt(p[0])]; num+=a*w; den+=w; cnt++; if(a===1) agree++; });
     return {k,pct:den?Math.round(100*num/den):0,agree,cnt}; }).sort((x,y)=>y.pct-x.pct);
 }
-function rang(){ let r=RANGS[0]; RANGS.forEach(x=>{ if(S.xp>=x[0]) r=x; }); const nx=RANGS.find(x=>x[0]>S.xp); return {nom:r[1], next:nx?nx[0]:null, base:r[0]}; }
+function rang(){ let r=RANGS[0]; RANGS.forEach(x=>{ if(S.xp>=x[0]) r=x; }); const nx=RANGS.find(x=>x[0]>S.xp); return {nom:G(r[1][0],r[1][1]), next:nx?nx[0]:null, base:r[0]}; }
 function addXP(n,el){ S.xp+=n; save(); const t=document.createElement("div"); t.className="xpfly"; t.textContent="+"+n+" XP";
   const r=(el||document.body).getBoundingClientRect(); t.style.left=(r.left+r.width/2)+"px"; t.style.top=(r.top+window.scrollY)+"px"; document.body.appendChild(t); setTimeout(()=>t.remove(),1200); updXP(); }
 function updXP(){ const e=$("#xpb"); if(!e) return; const r=rang(); e.querySelector("b").textContent=r.nom; e.querySelector("i").style.width=(r.next?((S.xp-r.base)/(r.next-r.base)*100):100)+"%"; e.querySelector("span").textContent=S.xp+" XP"; }
@@ -52,7 +55,7 @@ function hemicycle(sup){
 function gauges(){
   const t=totals(), r=rang(), bar=(v,l,col,txt)=>`<div class="g"><div class="gl">${l}</div><div class="gb"><i style="width:${Math.max(6,Math.min(100,v))}%;background:${col}"></i></div><div class="gv">${txt}</div></div>`;
   return `<div class="gauges">${bar(50+t.b*6,"Budget","#FFC800",(t.b>0?"+":"")+t.b)}${bar(50+t.c*10,"Climat","#3DDC84",(t.c>0?"+":"")+t.c)}${bar(t.n?t.soutien*100:50,"Soutiens","#8B5CF6",t.n?Math.round(t.soutien*100)+" %":"–")}</div>
-  <div class="xpbar" id="xpb"><b>${r.nom}</b><div class="xpt"><i style="width:${r.next?((S.xp-r.base)/(r.next-r.base)*100):100}%"></i></div><span>${S.xp} XP</span></div>`;
+  <div class="xpbar" id="xpb">${S.moi?`<span class="me">${perso("moi","happy")}</span>`:""}<b>${r.nom}</b><div class="xpt"><i style="width:${r.next?((S.xp-r.base)/(r.next-r.base)*100):100}%"></i></div><span>${S.xp} XP</span></div>`;
 }
 function topbar(){ const done=Object.keys(S.ch).length;
   return `<div class="top"><button class="btn ghost sm" onclick="go('map')">Carte</button><div class="prog"><i style="width:${done/30*100}%"></i></div><div class="cnt">${done}/30</div></div>${gauges()}`; }
@@ -65,31 +68,42 @@ V.home=()=>{ const started=Object.keys(S.ch).length;
   <div class="sky"><div class="sun"></div><div class="cloud c1"></div><div class="cloud c2"></div></div>
   <div class="hero pop">${ICON.logo}</div>
   <h1 class="pop d1">MANDAT <span>27</span></h1>
-  <p class="lead pop d2">Tu es élu·e président·e. 5 ans, 30 décisions réelles de la campagne 2027. Ton équipe t'aide à comprendre, toi tu tranches.</p>
+  <p class="lead pop d2">Tu arrives à l'Élysée. 5 ans, 30 décisions réelles de la campagne 2027. Ton équipe t'aide à comprendre, toi tu tranches.</p>
   <div class="cast pop d3">${["lea","karim","helene","sam","yuki"].map((k,i)=>`<div class="cm" style="--i:${i}">${perso(k,"happy")}<b>${CAST[k].nom}</b><small>${CAST[k].role}</small></div>`).join("")}</div>
   <div class="stack pop d4">
-   <button class="btn big" onclick="${started?"go('map')":"go('elect')"}">${started?"Reprendre mon mandat":"Commencer"}</button>
+   <button class="btn big" onclick="${started&&S.moi?"go('map')":"go('avatar')"}">${started?"Reprendre mon mandat":"Commencer"}</button>
    <button class="btn ghost" onclick="go('method')">Comment c'est calculé ?</button>
    ${started?`<button class="link" onclick="reset()">Tout recommencer</button>`:""}
   </div>
   <p class="fine">Ni un sondage, ni une consigne de vote. Aucun compte, rien n'est envoyé : tout reste sur ton téléphone. Personnages inventés.</p></div>`; };
 
+V.avatar=()=>{ const m=S.moi||{g:null,skin:1,hair:0,st:"short"}; if(!S.moi) S.moi=m; setMoi(m);
+ const sw=(arr,key,lab)=>`<div class="pick"><span>${lab}</span><div class="sws">${arr.map((c,i)=>`<button class="sw ${m[key]===i?"on":""}" style="background:${Array.isArray(c)?c[0]:c}" onclick="setAv('${key}',${i})" aria-label="${lab} ${i+1}"></button>`).join("")}</div></div>`;
+ return `<div class="screen avatar">
+  <div class="tag">Avant la photo officielle</div><h2 class="pop">Qui entre à l'Élysée ?</h2>
+  <div class="portrait pop d1"><div class="flag"><i></i><i></i><i></i></div>${perso("moi","happy","big")}<div class="plaque">${m.g?G("Le Président","La Présidente"):"Président·e"} de la République</div></div>
+  <div class="seg pop d2"><button class="${m.g==="f"?"on":""}" onclick="setAv('g','f')">Présidente</button><button class="${m.g==="m"?"on":""}" onclick="setAv('g','m')">Président</button></div>
+  ${sw(SKINS,"skin","Peau")}
+  <div class="pick"><span>Coiffure</span><div class="chips">${STYLES.map(s=>`<button class="chip ${m.st===s[0]?"on":""}" onclick="setAv('st','${s[0]}')">${s[1]}</button>`).join("")}</div></div>
+  ${sw(HAIRS,"hair","Cheveux")}
+  <button class="btn big gold" ${m.g?"":"disabled"} onclick="photo()">${m.g?"Prendre la photo officielle":"Choisis président ou présidente"}</button>
+  <p class="fine">Ton apparence ne change rien au résultat.</p></div>`; };
 V.elect=()=>`<div class="screen elect">
   <div class="crowd">${["lea","sam","ines","marc","yuki","helene"].map((k,i)=>`<div class="fan" style="--i:${i}">${perso(k,"wow")}</div>`).join("")}</div>
-  <div class="tv"><div class="tvin"><div class="bandeau">ÉDITION SPÉCIALE</div><div class="count"><span>20:00</span></div><div class="reveal">C'EST TOI !</div></div></div>
+  <div class="tv"><div class="tvin"><div class="bandeau">ÉDITION SPÉCIALE</div><div class="count"><span>20:00</span></div><div class="tvme">${perso("moi","happy")}</div><div class="reveal">C'EST TOI !</div></div></div>
   <div class="confetti">${[...Array(24)].map((_,i)=>`<i style="--i:${i}"></i>`).join("")}</div>
-  <h2 class="pop d5">Dimanche 2 mai 2027, 20 h.</h2>
-  ${say("karim","Félicitations, Madame ou Monsieur le Président. On a 5 ans et 30 dossiers brûlants. Je t'explique chaque fois, et c'est toi qui décides.",{cls:"pop d5"})}
+  <h2 class="pop d5">Dimanche 2 mai 2027, 20&nbsp;h</h2>
+  ${say("karim",`Félicitations, ${TITRE()}. On a 5 ans et 30 dossiers brûlants. Je t'explique chaque fois, et c'est toi qui décides.`,{cls:"pop d5"})}
   <button class="btn big pop d5" onclick="go('map')">Entrer à l'Élysée</button></div>`;
 
 V.map=()=>{ const nxt=Q.findIndex(q=>!S.ch[q.id]);
  return `<div class="screen map">${topbar()}
-  ${nxt>=0?say("karim", nxt===0?"Voilà ta feuille de route. On commence par les retraites : touche la première bulle.":`Prochain dossier : ${Q[nxt].theme.toLowerCase()}. Format du vote : ${VOTE_NOM[fmtVote(nxt)].toLowerCase()}.`):say("karim","Mandat terminé. Les Français attendent ton bilan.",{mood:"wow"})}
+  ${nxt>=0?say("karim", nxt===0?`Voilà ta feuille de route, ${TITRE()}. On commence par les retraites : touche la première bulle.`:`Prochain dossier : ${Q[nxt].theme.toLowerCase()}. Format du vote : ${VOTE_NOM[fmtVote(nxt)].toLowerCase()}.`):say("karim","Mandat terminé. Les Français attendent ton bilan.",{mood:"wow"})}
   ${ANNEES.map((y,ai)=>{ const qs=Q.map((q,i)=>({q,i})).filter(o=>o.q.an===ai);
    return `<section class="year y${ai}"><div class="yh"><b>${y.an}</b><div><h3>${y.titre}</h3><p>${y.sous}</p></div></div>
    <div class="path">${qs.map(({q,i},j)=>{ const st=S.ch[q.id]?"done":(i===nxt?"next":(i<nxt||nxt<0?"open":"lock"));
      return `<button class="node ${st}" style="--x:${[0,46,72,46,0,-46][j]}px" ${st==="lock"?"disabled":""} onclick="openQ(${i})">
-      <span class="dot">${st==="done"?"✓":j+1}</span><span class="nt">${esc(q.theme)}</span>${st==="next"?`<span class="here">${perso("lea","happy")}</span>`:""}</button>`; }).join("")}</div></section>`; }).join("")}
+      <span class="dot">${st==="done"?"✓":j+1}</span><span class="nt">${esc(q.theme)}</span>${st==="next"?`<span class="here">${perso(S.moi?"moi":"lea","happy")}</span>`:""}</button>`; }).join("")}</div></section>`; }).join("")}
   ${nxt<0?`<button class="btn big gold" onclick="go('verdict')">Voir le verdict</button>`:""}</div>`; };
 
 V.q=()=>{ const q=Q[S.qi], steps=stepsOf(q), st=steps[S.step];
@@ -117,7 +131,7 @@ STEP.quiz=q=>{ const z=QUIZ[q.id], a=S.quiz[q.id];
    ${q.faits.map((f,i)=>`<div class="card fact pop d${i}"><p>${esc(f[0])}</p>${src(f[1],f[2])}</div>`).join("")}
    <div class="nav"><button class="btn ghost" onclick="step(-1)">Retour</button><button class="btn" onclick="step(1)">Suivant</button></div>`:""}`; };
 STEP.faits=q=>`${say("helene","Avant de décider, les chiffres. Touche les cartes pour les retourner.")}
-  <div class="flips">${q.faits.map((f,i)=>`<div class="flip pop d${i}" onclick="this.classList.add('on');addXP(5,this)"><div class="fi"><div class="ff"><span>Fait ${i+1}</span><b>?</b></div><div class="fb"><p>${esc(f[0])}</p>${src(f[1],f[2])}</div></div></div>`).join("")}</div>`;
+  <div class="flips">${q.faits.map((f,i)=>`<div class="flip pop d${i}" onclick="if(!this.classList.contains('on')){this.classList.add('on');addXP(5,this)}"><div class="fi"><div class="ff"><span>Fait ${i+1}</span><b>?</b></div><div class="fb"><p>${esc(f[0])}</p>${src(f[1],f[2])}</div></div></div>`).join("")}</div>`;
 STEP.debat=q=>`<div class="vs pop"><div class="side l">${perso("ines","happy","talk big")}<span class="pl g">POUR</span></div><div class="bolt">VS</div><div class="side r">${perso("marc","neutral","talk big")}<span class="pl r">CONTRE</span></div></div>
   ${say("ines",q.pour[0],{color:"green",extra:`<small class="att">Position défendue par : ${esc(q.pour[1])}</small>`})}
   ${say("marc",q.contre[0],{right:1,color:"red",extra:`<small class="att">Position défendue par : ${esc(q.contre[1])}</small>`})}`;
@@ -146,7 +160,7 @@ STEP.vote=q=>{ const f=fmtVote(S.qi), O=["A","B","C"];
     <div id="sldet" class="card"><b>${esc(q.opts[S.pick||"B"].t)}</b>${det(S.pick||"B")}</div>
     <button class="btn" onclick="vote(S.pick||'B')">Je valide cette position</button></div>${extra}`;
  return `${head}${say("karim","Trois bulletins, une seule urne. Prends un bulletin pour le lire, puis glisse-le dans l'urne.")}
-   <div class="ballots">${O.map((k,i)=>`<button class="bal ${S.pick===k?"up":""}" style="--r:${[-8,0,8][i]}deg" onclick="pickBal('${k}')"><span class="ol">${k}</span><b>${esc(q.opts[k].t)}</b></button>`).join("")}</div>
+   <div class="ballots">${O.map((k,i)=>`<button class="bal ${S.pick===k?"up":""}" style="--r:${[-5,0,5][i]}deg" onclick="pickBal('${k}')"><span class="ol">${k}</span><b>${esc(q.opts[k].t)}</b></button>`).join("")}</div>
    <div class="mini-urne">${ICON.urne}</div>
    ${S.pick?`<div class="card pop">${det(S.pick)}<button class="btn" onclick="vote('${S.pick}')">Glisser dans l'urne</button></div>`:""}${extra}`; };
 
@@ -160,7 +174,7 @@ V.result=()=>{ const q=Q[S.qi], o=S.ch[q.id];
  const arrow=v=>v>0?`<span class="up">▲ mieux</span>`:v<0?`<span class="down">▼ pire</span>`:`<span class="eq">= stable</span>`;
  const climat=q.opts.A.c||q.opts.B.c||q.opts.C.c;
  return `<div class="screen q res">${topbar()}
-  <div class="journal"><div class="mast">${UNES[S.qi%4]}<small>${esc(ANNEES[q.an].an)} · édition spéciale</small></div><div class="kw">${kw.toUpperCase()}</div><h2>${esc(op.t)}</h2><p>Le ou la président·e a tranché sur ${esc(q.theme.toLowerCase())}.</p></div>
+  <div class="journal"><div class="mast">${UNES[S.qi%4]}<small>${esc(ANNEES[q.an].an)} · édition spéciale</small></div><div class="kw">${kw.toUpperCase()}</div><h2>${esc(op.t)}</h2><p>${G("Le président","La présidente")} a tranché sur ${esc(q.theme.toLowerCase())}.</p></div>
   <div class="hemibox pop d2">${hemicycle(sup)}<p><b>${sup} des 8</b> principaux candidats défendent ce choix. Noms cachés jusqu'à la fin.</p></div>
   <div class="grid3 pop d3"><div class="kpi"><small>Budget</small>${arrow(op.b)}</div><div class="kpi"><small>Climat</small>${climat?arrow(op.c):'<span class="eq">sans effet</span>'}</div><div class="kpi"><small>XP</small><b class="big">+20</b></div></div>
   ${say("karim",sup>=5?"Ça devrait passer à l'Assemblée sans trop de casse.":sup>=3?"Ça passera, mais il faudra négocier.":"Accroche-toi : on va devoir convaincre presque tout le monde.",{mood:sup>=5?"happy":sup>=3?"neutral":"wow",cls:"pop d4"})}
@@ -196,14 +210,15 @@ V.method=()=>`<div class="screen method"><button class="btn ghost sm" onclick="g
  <div class="card"><b>Les options</b><p>A = soutien net, B = position intermédiaire, C = opposition nette. Quel que soit le format de vote (cartes, carte à glisser, ministres, curseur, bulletin), ce sont toujours ces trois options. Jouer exactement le programme d'un candidat donne 100 % avec lui.</p></div>
  <div class="card"><b>Le score</b><p>Même option : 1 point. Options voisines : ½. Opposées : 0. « Compte beaucoup » double le poids. Les sujets passés ne comptent pas. Les XP et les quiz ne changent rien au résultat.</p></div>
  <div class="card"><b>Les personnages</b><p>Léa, Karim, Hélène, Sam, Yuki, Inès et Marc sont inventés. Ils ne représentent aucun parti et présentent toujours les arguments des deux côtés.</p></div>
+ <div class="card"><b>Ton personnage</b><p>Président ou présidente, apparence : c'est toi qui choisis. Ça ne change rien au calcul.</p></div>
  <div class="card"><b>Tes données</b><p>Aucun compte, aucun envoi. Tout reste dans ton navigateur.</p></div>
  <button class="link" onclick="reset()">Effacer mes réponses</button></div>`;
 
 // ───────── moteur
-function render(){ $("#app").innerHTML=V[S.screen](); window.scrollTo(0,0); save(); afterRender(); }
+function render(){ if(S.moi) setMoi(S.moi); if((S.screen!=="home"&&S.screen!=="avatar"&&S.screen!=="method")&&(!S.moi||!S.moi.g)) S.screen="avatar"; $("#app").innerHTML=V[S.screen](); window.scrollTo(0,0); save(); afterRender(); }
 function go(s){ if(s==="method") S.prev=S.screen; S.screen=s; render(); }
 function openQ(i){ S.qi=i; S.step=0; S.pick=null; go("q"); }
-function step(d){ const n=stepsOf(Q[S.qi]).length; if(d>0) addXP(5); S.step=Math.max(0,Math.min(n-1,S.step+d)); S.pick=null; render(); }
+function step(d){ const n=stepsOf(Q[S.qi]).length, key=Q[S.qi].id+":"+S.step; S.vu=S.vu||{}; if(d>0&&!S.vu[key]){ S.vu[key]=1; addXP(5); } S.step=Math.max(0,Math.min(n-1,S.step+d)); S.pick=null; render(); }
 function toVote(){ S.step=stepsOf(Q[S.qi]).length-1; S.pick=null; render(); }
 function peek(k){ document.querySelectorAll(".opt").forEach(e=>e.classList.toggle("open",e.id==="o"+k&&!e.classList.contains("open"))); }
 function pickMin(k){ S.pick=k; render(); setTimeout(()=>$("#minsay")&&$("#minsay").scrollIntoView({behavior:"smooth",block:"center"}),80); }
@@ -211,20 +226,26 @@ function pickBal(k){ S.pick=k; render(); }
 function slide(v){ const k=["A","B","C"][+v], q=Q[S.qi]; S.pick=k; const o=q.opts[k];
   $("#sldet").innerHTML=`<b>${esc(o.t)}</b><p><span class="pl g">Point fort</span>${esc(o.fort)}</p><p><span class="pl r">Point faible</span>${esc(o.faible)}</p><p class="rep"><span class="pl b">Ses défenseurs répondent</span>${esc(o.rep)}</p>`; $("#sldet").classList.remove("pulse"); void $("#sldet").offsetWidth; $("#sldet").classList.add("pulse"); }
 function answer(i,el){ const z=QUIZ[Q[S.qi].id]; S.quiz[Q[S.qi].id]=i; if(i===z.ok){ addXP(15,el); } render(); if(i===z.ok) burst(); else { const b=document.querySelectorAll(".qa")[i]; b&&b.classList.add("shake"); } }
-function vote(k){ S.ch[Q[S.qi].id]=k; S.pick=null; if(k!=="X") S.xp+=20; save(); if(k==="X"){ go("result"); return; } go("drop"); setTimeout(()=>go("result"),1300); }
+function vote(k){ const first=!S.ch[Q[S.qi].id]; S.ch[Q[S.qi].id]=k; S.pick=null; if(k!=="X"&&first) S.xp+=20; save(); if(k==="X"){ go("result"); return; } go("drop"); setTimeout(()=>go("result"),1300); }
 function next(){ const q=Q[S.qi], yd=Q.filter(x=>x.an===q.an).every(x=>S.ch[x.id]);
   if(yd&&S.seenYear<q.an){ S.seenYear=q.an; go("bilan"); return; } if(Q.findIndex(x=>!S.ch[x.id])<0){ go("verdict"); return; } go("map"); }
+function setAv(k,v){ S.moi[k]=v; if(k==="g"&&!S.moi.stTouched) S.moi.st=(v==="f"?"long":"short"); if(k==="st") S.moi.stTouched=1; setMoi(S.moi); const y=window.scrollY; render(); window.scrollTo(0,y); }
+function photo(){ const f=document.createElement("div"); f.className="flash"; document.body.appendChild(f); setTimeout(()=>{ f.remove(); go(Object.keys(S.ch).length?"map":"elect"); },450); }
 function reset(){ S=fresh(); try{localStorage.removeItem("mandat27v2");}catch(e){} render(); }
 function burst(){ const c=document.createElement("div"); c.className="confetti fixed"; c.innerHTML=[...Array(24)].map((_,i)=>`<i style="--i:${i}"></i>`).join(""); document.body.appendChild(c); setTimeout(()=>c.remove(),2600); }
 
-let typers=[];
+let typers=[]; let typed=new Set(), typedKey="";
 function afterRender(){
   typers.forEach(clearInterval); typers=[];
   // messages SMS séquentiels
-  const seq=[...document.querySelectorAll("[data-seq]")]; seq.forEach((e,i)=>{ e.style.display="none"; setTimeout(()=>{ e.style.display=""; e.classList.add("pop"); if(e.classList.contains("typing")) setTimeout(()=>e.remove(),900); }, 300+i*900); });
+  const seq=[...document.querySelectorAll("[data-seq]")]; const rm0=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches; if(!rm0) seq.forEach((e,i)=>{ e.style.display="none"; setTimeout(()=>{ e.style.display=""; e.classList.add("pop"); if(e.classList.contains("typing")) setTimeout(()=>e.remove(),900); }, 300+i*900); });
   // machine à écrire dans les bulles, l'une après l'autre
   const els=[...document.querySelectorAll("[data-type]")]; let delay=250;
-  els.forEach(el=>{ const full=el.textContent; el.textContent=""; el.closest(".say").classList.add("wait");
+  const rm=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(rm){ seq.forEach(e=>{ e.style.display=""; if(e.classList.contains("typing")) e.remove(); }); }
+  els.forEach(el=>el.setAttribute("aria-label",el.textContent));
+  const key=S.screen+":"+S.qi+":"+S.step; if(key!==typedKey){ typed=new Set(); typedKey=key; }
+  if(!rm) els.forEach(el=>{ const full=el.textContent; if(typed.has(full)) return; typed.add(full); el.textContent=""; el.closest(".say").classList.add("wait");
     const dur=Math.min(1600,full.length*14); const say=el.closest(".say");
     setTimeout(()=>{ say.classList.remove("wait"); say.classList.add("speaking"); let i=0;
       const t=setInterval(()=>{ i+=2; el.textContent=full.slice(0,i); if(i>=full.length){ clearInterval(t); el.textContent=full; say.classList.remove("speaking"); } },14); typers.push(t);
@@ -243,7 +264,7 @@ function detail(k){
   $("#det").innerHTML=`<div class="card detail"><h3>${esc(CANDS[k].nom)} et toi</h3><table><tr><th>Décision</th><th>Toi</th><th>Candidat</th></tr>${rows}</table></div>`;
   $("#det").scrollIntoView({behavior:"smooth"}); }
 function share(){ const m=match().slice(0,3).map((r,i)=>`${i+1}. ${CANDS[r.k].nom} ${r.pct} %`).join("\n");
-  const t=`Mon mandat 2027-2032 ressemble à :\n${m}\nRang : ${rang().nom}\n(Mandat 27, par Apprenti Politique. Ni un sondage, ni une consigne de vote.)`;
+  const t=`Mon mandat de ${G("président","présidente")} 2027-2032 ressemble à :\n${m}\nRang : ${rang().nom}\n(Mandat 27, par Apprenti Politique. Ni un sondage, ni une consigne de vote.)`;
   try{ navigator.clipboard.writeText(t).then(()=>toast("Copié !"),()=>toast(t)); }catch(e){ toast(t); } }
 function toast(t){ const d=document.createElement("div"); d.className="toast"; d.textContent=t; document.body.appendChild(d); setTimeout(()=>d.remove(),2600); }
 render();

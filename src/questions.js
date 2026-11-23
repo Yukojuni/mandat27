@@ -173,7 +173,7 @@ const Q = [
  ailleurs:[["Allemagne","Sortie du nucléaire achevée en 2023."],["Suède","Relance du nucléaire décidée après des années de débat."]],
  opts:{
   A:{t:"Six EPR2 et plus, relance massive",fort:"Électricité bas carbone et pilotable.",faible:"Coûts et délais incertains, premier réacteur vers 2038.",rep:"« L'énergie nucléaire a fait de la France l'un des pays les moins carbonés d'Europe. »",b:-1,c:1},
-  B:{t:"Prolonger le parc et construire quelques réacteurs, avec beaucoup de renouvelables",fort:"Diversifie les risques.",faible:"Demande les deux investissements à la fois.",rep:"« Il ne faut pas tout miser sur une seule technologie. »",b:-1,c:1},
+  B:{t:"Prolonger le parc, quelques réacteurs neufs et beaucoup de renouvelables",fort:"Diversifie les risques.",faible:"Demande les deux investissements à la fois.",rep:"« Il ne faut pas tout miser sur une seule technologie. »",b:-1,c:1},
   C:{t:"Sortie progressive du nucléaire, 100 % renouvelables",fort:"Fin des déchets et des risques d'accident.",faible:"Défi immense de stockage et de flexibilité.",rep:"« Les renouvelables sont moins chers et plus rapides à construire. »",b:0,c:0}},
  lecon:"Presque tous les candidats veulent du nouveau nucléaire ; LFI est la seule à défendre une sortie."},
 

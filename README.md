@@ -17,3 +17,6 @@ python3 src/build.py
 
 ## Sources des positions
 Lecture éditoriale de France-Vote (23/11/2026) avec la source primaire quand elle existe. Les positions non sourcées comptent pour moitié.
+
+## Tests
+`python3 tests/run.py` joue 6 parties complètes par vrais clics (écrans de 320 px à 1280 px, animations réduites ou non) et vérifie : débordements, textes coupés, cibles tactiles, erreurs console, enregistrement des votes dans les 5 formats, reprise après rechargement, verdict, et cohérence du contenu. Nécessite Playwright et Chrome.
