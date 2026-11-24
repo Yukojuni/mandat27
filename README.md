@@ -20,3 +20,9 @@ Lecture éditoriale de France-Vote (23/11/2026) avec la source primaire quand el
 
 ## Tests
 `python3 tests/run.py` joue 6 parties complètes par vrais clics (écrans de 320 px à 1280 px, animations réduites ou non) et vérifie : débordements, textes coupés, cibles tactiles, erreurs console, enregistrement des votes dans les 5 formats, reprise après rechargement, verdict, et cohérence du contenu. Nécessite Playwright et Chrome.
+
+## Animations Rive
+- `rive/mandat27.riv` : animations compilées depuis le projet Rive local (`C:\Users\lucas\Projects\politics`, fichier `build/politics.riv`). Pour mettre à jour : recopier ce fichier ici sous le nom `mandat27.riv`.
+- `rive/rive.js` + `rive/rive.wasm` : runtime web `@rive-app/canvas` 2.55.1, servi localement.
+- `src/riveglue.js` : branchement. Les personnages SVG restent affichés en secours si Rive ne charge pas. Les instances Rive sont réutilisées d'un écran à l'autre et préparées hors champ pour masquer l'écran de démarrage Rive du plan gratuit.
+- Déjà branchés : `Character` (tous les personnages, joueur compris, parole, humeurs, réactions) et `BallotDrop` (urne après chaque vote).

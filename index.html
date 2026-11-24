@@ -134,6 +134,13 @@ a{color:var(--blue)}
 
 /* ───── V2 : personnages */
 .perso{display:block;width:100%;height:auto;overflow:visible}
+#rvpark{position:fixed;left:0;bottom:0;width:24px;height:24px;overflow:hidden;opacity:.01;pointer-events:none;z-index:-1}#rvpark canvas{width:24px;height:30px;display:block}
+.rv{position:relative;aspect-ratio:100/124}
+.rv>.pfb{position:absolute;inset:0;width:100%;height:100%;overflow:visible;transition:opacity .25s}
+.rv>.rvc{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity .25s;pointer-events:none}
+.rv.rv-on>.rvc{opacity:1}.rv.rv-on>.pfb{opacity:0}
+.rvstage .rvbox{position:absolute;inset:0;aspect-ratio:auto}
+.rvstage .rvbox>.pfb{overflow:visible}
 .perso .bob{animation:pbob 3.2s ease-in-out infinite;transform-origin:50% 100%}
 .perso .eyes{animation:blink 4.6s infinite;transform-origin:50% 46px}
 @keyframes pbob{50%{transform:translateY(-2px) scaleY(1.015)}}
@@ -356,6 +363,7 @@ a{color:var(--blue)}
 </head>
 <body>
 <main id="app"></main>
+<script src="rive/rive.js"></script>
 <script>
 // Positions des 8 principaux candidats déclarés (sondages nov. 2026) sur 30 thèses.
 // Base : lecture éditoriale de France-Vote (france-vote.fr, données au 23/11/2026),
@@ -560,9 +568,12 @@ function hair(c){
   if(c.st==="curly") return `${[22,34,46,58,70,80].map((x,i)=>`<circle cx="${x}" cy="${18+(i%2)*4}" r="11" fill="${h}"/>`).join("")}<circle cx="18" cy="34" r="8" fill="${h}"/><circle cx="82" cy="34" r="8" fill="${h}"/>`;
   return `<path d="M14 80 Q10 10 50 10 Q90 10 86 80 L78 80 Q80 28 50 24 Q20 28 22 80Z" fill="${h}"/>`;
 }
-function perso(id, mood="happy", cls=""){
+function perso(id, mood="happy", cls="", o={}){
+  return `<span class="perso rv ${cls}" data-c="${id}" data-m="${mood}"${o.t?` data-t="${o.t}"`:""}${o.loop?` data-loop="${o.loop}"`:""} role="img" aria-label="${CAST[id].nom}">${persoSVG(id,mood)}</span>`;
+}
+function persoSVG(id, mood="happy"){
   const c=CAST[id];
-  return `<svg class="perso ${cls}" viewBox="0 0 100 124" aria-label="${c.nom}">
+  return `<svg class="pfb" viewBox="0 0 100 124" aria-hidden="true">
    <g class="bob">
     <path d="M14 124 V104 Q14 84 34 84 H66 Q86 84 86 104 V124Z" fill="${c.suit}"/>
     <path d="M50 84 V124 H86 V104 Q86 84 66 84Z" fill="${c.suit2}" opacity=".35"/>
@@ -583,7 +594,7 @@ function perso(id, mood="happy", cls=""){
 function say(id, text, opt={}){
   const c=CAST[id];
   return `<div class="say ${opt.right?"right":""} ${opt.cls||""}">
-    <div class="av">${perso(id, opt.mood||"happy", "talk")}<span class="who">${c.nom}<small>${c.role}</small></span></div>
+    <div class="av">${perso(id, opt.mood||"happy", "talk", {t:opt.t})}<span class="who">${c.nom}<small>${c.role}</small></span></div>
     <div class="bub ${opt.color||""}"><p data-type>${esc(text)}</p>${opt.extra||""}</div></div>`;
 }
 
@@ -593,6 +604,79 @@ const HAIRS=["#15151F","#5A3A22","#C98A3B","#E07A2E","#C9CEDD","#6B34A8"];
 const STYLES=[["short","Courts"],["curly","Bouclés"],["bob","Carré"],["long","Longs"],["bun","Chignon"]];
 function setMoi(m){ const s=SKINS[m.skin]||SKINS[1];
   CAST.moi={nom:"Toi", role:m.g==="m"?"le président":"la présidente", skin:s[0], sh:s[1], hair:HAIRS[m.hair]||HAIRS[0], st:m.st||"short", suit:"#13234B", suit2:"#0B1736", tie:m.g==="m"?"#FF4B55":null}; }
+
+// ───────── Rive : personnages et urne animés (fichier rive/mandat27.riv)
+// Les SVG de perso.js restent affichés en secours : tant que Rive n'est pas prêt,
+// ou si le fichier ne charge pas, le jeu reste complet.
+// Chaque instance Rive est gardée dans un « pool » et déplacée d'un écran à l'autre :
+// on évite de recréer des canvas à chaque rendu (et l'écran de démarrage Rive
+// du plan gratuit ne s'affiche que hors champ, pendant le préchauffage).
+const RV = { buf:null, ok:false, pool:[], rm:false, SPLASH:1900 };
+function hexARGB(h){ return (0xFF000000 | parseInt(h.slice(1),16)) >>> 0; }
+function rvApplyChar(inst, c, mood){
+  const col=(k,v)=>{ const p=inst.color(k); if(p&&v) p.value=hexARGB(v); };
+  col("skinColor",c.skin); col("skinShade",c.sh); col("hairColor",c.hair);
+  col("outfitColor",c.suit); col("outfitShade",c.suit2); col("tieColor",c.tie||"#FFC800");
+  const e=(k,v)=>{ const p=inst.enum(k); if(p&&v) try{ p.value=v; }catch(_){} };
+  e("hairStyle",c.st); e("mood",mood||"happy");
+  const b=(k,v)=>{ const p=inst.boolean(k); if(p) p.value=!!v; };
+  b("tie",!!c.tie); b("glasses",!!c.glasses); b("reducedMotion",RV.rm); b("talking",false); b("cheering",false);
+}
+function rvPark(){ let p=document.getElementById("rvpark"); if(!p){ p=document.createElement("div"); p.id="rvpark"; p.setAttribute("aria-hidden","true"); document.body.appendChild(p); } return p; }
+function rvCreate(artboard, vmName){
+  const canvas=document.createElement("canvas"); canvas.className="rvc"; canvas.width=100; canvas.height=124; rvPark().appendChild(canvas);
+  const slot={artboard, canvas, r:null, inst:null, ready:false, used:false, born:performance.now()};
+  slot.r=new rive.Rive({ buffer:RV.buf.slice(0), canvas, artboard, stateMachines:artboard, autoplay:true, autoBind:false,
+    layout:new rive.Layout({fit:rive.Fit.Contain}),
+    onLoad:()=>{ try{ const vm=slot.r.viewModelByName(vmName); slot.inst=vm.instance(); slot.r.bindViewModelInstance(slot.inst);
+        rvWaitSplash(slot); if(slot.pending) slot.pending(slot); }catch(e){ slot.dead=true; } },
+    onLoadError:()=>{ slot.dead=true; } });
+  RV.pool.push(slot); return slot;
+}
+// l'écran de démarrage Rive (plan gratuit) est noir : on attend qu'il ait disparu avant d'afficher
+const RVPROBE=document.createElement("canvas"); RVPROBE.width=RVPROBE.height=6;
+function rvWaitSplash(slot){ const t0=performance.now();
+  const iv=setInterval(()=>{ let dark=1; try{ const x=RVPROBE.getContext("2d",{willReadFrequently:true}); x.clearRect(0,0,6,6); x.drawImage(slot.canvas,0,0,6,6);
+      const d=x.getImageData(0,0,6,6).data; let n=0; for(let i=0;i<d.length;i+=4) if(d[i]<30&&d[i+1]<30&&d[i+2]<30&&d[i+3]>200) n++; dark=n/36; }catch(_){ dark=0; }
+    if(dark<0.5&&performance.now()-t0>400 || performance.now()-t0>5000){ clearInterval(iv); setTimeout(()=>{ slot.ready=true; rvShow(slot); },120); } },150); }
+function rvShow(slot){ if(slot.host&&slot.ready&&!slot.dead){ slot.host.classList.add("rv-on"); if(slot.onReady){ const f=slot.onReady; slot.onReady=null; f(slot); } } }
+function rvSize(slot){ const w=slot.host.clientWidth||68, h=slot.host.clientHeight||84, d=Math.min(2,window.devicePixelRatio||1);
+  if(slot.canvas.width!==Math.round(w*d)){ slot.canvas.width=Math.round(w*d); slot.canvas.height=Math.round(h*d); try{ slot.r.resizeDrawingSurfaceToCanvas(); }catch(_){} } }
+function rvTake(artboard, vmName){ let s=RV.pool.find(p=>!p.used&&!p.dead&&p.artboard===artboard); if(!s) s=rvCreate(artboard,vmName); s.used=true; return s; }
+function rvMount(){
+  if(!RV.ok) return;
+  RV.pool.forEach(p=>{ p.used=false; });
+  // on réattribue d'abord les instances encore affichées à leur même hôte
+  const hosts=[...document.querySelectorAll(".rv")];
+  RV.pool.forEach(p=>{ p.host=null; });
+  hosts.forEach(h=>{
+    const ab=h.dataset.ab||"Character", vm=ab==="BallotDrop"?"BallotDrop":"Character";
+    const s=rvTake(ab,vm); s.host=h; h._rv=s;
+    if(s.canvas.parentNode!==h) h.appendChild(s.canvas);
+    h.classList.toggle("rv-on", s.ready&&!s.dead);
+    const setup=sl=>{
+      if(ab==="BallotDrop"){ const e=sl.inst.enum("stampText"); if(e) try{ e.value=h.dataset.stamp||"signe"; }catch(_){} const b=sl.inst.boolean("reducedMotion"); if(b) b.value=RV.rm; }
+      else { const c=CAST[h.dataset.c]; if(c) rvApplyChar(sl.inst,c,h.dataset.m); if(h.dataset.loop){ const b=sl.inst.boolean(h.dataset.loop); if(b) b.value=!RV.rm; } }
+      sl.r.play(); rvSize(sl);
+      if(h.dataset.t){ const t=h.dataset.t; sl.onReady=x=>{ const tr=x.inst&&x.inst.trigger(t); if(tr){ tr.trigger(); if(ab==="BallotDrop") x.fired=true; } }; if(sl.ready) rvShow(sl); }
+    };
+    if(s.inst) setup(s); else s.pending=setup;
+  });
+  const park=rvPark(); RV.pool.forEach(p=>{ if(!p.used&&p.canvas.parentNode!==park) park.appendChild(p.canvas); });
+  // l'urne est une animation à usage unique : on jette l'instance jouée et on en prépare une neuve hors champ
+  RV.pool.filter(p=>!p.used&&p.fired).forEach(p=>{ try{ p.r.cleanup(); }catch(_){} p.canvas.remove(); RV.pool.splice(RV.pool.indexOf(p),1); rvCreate(p.artboard,"BallotDrop"); });
+}
+function rvTalk(sayEl,on){ const h=sayEl&&sayEl.querySelector(".rv"); const s=h&&h._rv; if(s&&s.inst){ const b=s.inst.boolean("talking"); if(b) b.value=on; } }
+function rvPrewarm(){ // instances préparées hors champ pendant l'accueil
+  const want=[["Character",9],["BallotDrop",1]];
+  want.forEach(([ab,n])=>{ const have=RV.pool.filter(p=>p.artboard===ab).length; for(let i=have;i<n;i++) rvCreate(ab, ab==="BallotDrop"?"BallotDrop":"Character"); });
+}
+function rvInit(){
+  RV.rm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
+  if(typeof rive==="undefined") return;
+  try{ rive.RuntimeLoader.setWasmUrl("rive/rive.wasm"); rive.Rive.suppressDeprecationWarn=true; }catch(_){}
+  fetch("rive/mandat27.riv").then(r=>{ if(!r.ok) throw 0; return r.arrayBuffer(); }).then(b=>{ RV.buf=b; RV.ok=true; rvPrewarm(); rvMount(); }).catch(()=>{});
+}
 
 // 30 décisions fixes, 6 par année. Option A = soutien net à la thèse,
 // B = position intermédiaire (plutôt pour, nuancé ou plutôt contre), C = opposition nette.
@@ -1181,7 +1265,7 @@ V.home=()=>{ const started=Object.keys(S.ch).length;
   <div class="hero pop">${ICON.logo}</div>
   <h1 class="pop d1">MANDAT <span>27</span></h1>
   <p class="lead pop d2">Tu arrives à l'Élysée. 5 ans, 30 décisions réelles de la campagne 2027. Ton équipe t'aide à comprendre, toi tu tranches.</p>
-  <div class="cast pop d3">${["lea","karim","helene","sam","yuki"].map((k,i)=>`<div class="cm" style="--i:${i}">${perso(k,"happy")}<b>${CAST[k].nom}</b><small>${CAST[k].role}</small></div>`).join("")}</div>
+  <div class="cast pop d3">${["lea","karim","helene","sam","yuki"].map((k,i)=>`<div class="cm" style="--i:${i}">${perso(k,"happy","",{t:"wave"})}<b>${CAST[k].nom}</b><small>${CAST[k].role}</small></div>`).join("")}</div>
   <div class="stack pop d4">
    <button class="btn big" onclick="${started&&S.moi?"go('map')":"go('avatar')"}">${started?"Reprendre mon mandat":"Commencer"}</button>
    <button class="btn ghost" onclick="go('method')">Comment c'est calculé ?</button>
@@ -1201,7 +1285,7 @@ V.avatar=()=>{ const m=S.moi||{g:null,skin:1,hair:0,st:"short"}; if(!S.moi) S.mo
   <button class="btn big gold" ${m.g?"":"disabled"} onclick="photo()">${m.g?"Prendre la photo officielle":"Choisis président ou présidente"}</button>
   <p class="fine">Ton apparence ne change rien au résultat.</p></div>`; };
 V.elect=()=>`<div class="screen elect">
-  <div class="crowd">${["lea","sam","ines","marc","yuki","helene"].map((k,i)=>`<div class="fan" style="--i:${i}">${perso(k,"wow")}</div>`).join("")}</div>
+  <div class="crowd">${["lea","sam","ines","marc","yuki","helene"].map((k,i)=>`<div class="fan" style="--i:${i}">${perso(k,"wow","",{loop:"cheering"})}</div>`).join("")}</div>
   <div class="tv"><div class="tvin"><div class="bandeau">ÉDITION SPÉCIALE</div><div class="count"><span>20:00</span></div><div class="tvme">${perso("moi","happy")}</div><div class="reveal">C'EST TOI !</div></div></div>
   <div class="confetti">${[...Array(24)].map((_,i)=>`<i style="--i:${i}"></i>`).join("")}</div>
   <h2 class="pop d5">Dimanche 2 mai 2027, 20&nbsp;h</h2>
@@ -1239,7 +1323,7 @@ STEP.intro=q=>{ const f=fmtIntro(S.qi);
 STEP.quiz=q=>{ const z=QUIZ[q.id], a=S.quiz[q.id];
  return `${say("helene",z.q,{mood:"happy"})}
   <div class="quiz">${z.c.map((c,i)=>`<button class="qa ${a!=null?(i===z.ok?"ok":(i===a?"ko":"dim")):""}" ${a!=null?"disabled":""} onclick="answer(${i},this)">${esc(c)}</button>`).join("")}</div>
-  ${a!=null?`${say("helene",a===z.ok?"Bien vu ! Et voilà les autres chiffres clés.":"Pas tout à fait. Beaucoup de gens se trompent sur celui-là. Voilà les chiffres clés.",{mood:a===z.ok?"happy":"wow"})}
+  ${a!=null?`${say("helene",a===z.ok?"Bien vu ! Et voilà les autres chiffres clés.":"Pas tout à fait. Beaucoup de gens se trompent sur celui-là. Voilà les chiffres clés.",{mood:a===z.ok?"happy":"wow",t:a===z.ok?"cheer":"surprise"})}
    ${q.faits.map((f,i)=>`<div class="card fact pop d${i}"><p>${esc(f[0])}</p>${src(f[1],f[2])}</div>`).join("")}
    <div class="nav"><button class="btn ghost" onclick="step(-1)">Retour</button><button class="btn" onclick="step(1)">Suivant</button></div>`:""}`; };
 STEP.faits=q=>`${say("helene","Avant de décider, les chiffres. Touche les cartes pour les retourner.")}
@@ -1276,7 +1360,7 @@ STEP.vote=q=>{ const f=fmtVote(S.qi), O=["A","B","C"];
    <div class="mini-urne">${ICON.urne}</div>
    ${S.pick?`<div class="card pop">${det(S.pick)}<button class="btn" onclick="vote('${S.pick}')">Glisser dans l'urne</button></div>`:""}${extra}`; };
 
-V.drop=()=>`<div class="screen elect"><div class="stage"><div class="b-drop">${ICON.bulletin}</div>${ICON.urne}<div class="stamp">SIGNÉ</div></div></div>`;
+V.drop=()=>`<div class="screen elect"><div class="stage rvstage"><div class="rv rvbox" data-ab="BallotDrop" data-stamp="signe" data-t="drop"><div class="pfb"><div class="b-drop">${ICON.bulletin}</div>${ICON.urne}<div class="stamp">SIGNÉ</div></div></div></div></div>`;
 
 const UNES=["LE QUOTIDIEN","L'ÉCHO NATIONAL","LA DÉPÊCHE DU MATIN","LE JOURNAL DU SOIR"];
 V.result=()=>{ const q=Q[S.qi], o=S.ch[q.id];
@@ -1289,7 +1373,7 @@ V.result=()=>{ const q=Q[S.qi], o=S.ch[q.id];
   <div class="journal"><div class="mast">${UNES[S.qi%4]}<small>${esc(ANNEES[q.an].an)} · édition spéciale</small></div><div class="kw">${kw.toUpperCase()}</div><h2>${esc(op.t)}</h2><p>${G("Le président","La présidente")} a tranché sur ${esc(q.theme.toLowerCase())}.</p></div>
   <div class="hemibox pop d2">${hemicycle(sup)}<p><b>${sup} des 8</b> principaux candidats défendent ce choix. Noms cachés jusqu'à la fin.</p></div>
   <div class="grid3 pop d3"><div class="kpi"><small>Budget</small>${arrow(op.b)}</div><div class="kpi"><small>Climat</small>${climat?arrow(op.c):'<span class="eq">sans effet</span>'}</div><div class="kpi"><small>XP</small><b class="big">+20</b></div></div>
-  ${say("karim",sup>=5?"Ça devrait passer à l'Assemblée sans trop de casse.":sup>=3?"Ça passera, mais il faudra négocier.":"Accroche-toi : on va devoir convaincre presque tout le monde.",{mood:sup>=5?"happy":sup>=3?"neutral":"wow",cls:"pop d4"})}
+  ${say("karim",sup>=5?"Ça devrait passer à l'Assemblée sans trop de casse.":sup>=3?"Ça passera, mais il faudra négocier.":"Accroche-toi : on va devoir convaincre presque tout le monde.",{mood:sup>=5?"happy":sup>=3?"neutral":"wow",cls:"pop d4",t:sup>=5?"nod":sup>=3?null:"surprise"})}
   <div class="card lesson pop d5"><b>À retenir</b><p>${esc(q.lecon)}</p></div>
   <p class="fine">Les flèches sont des tendances indicatives, pas des prévisions chiffrées.</p>
   <button class="btn big" onclick="next()">Continuer</button></div>`; };
@@ -1373,7 +1457,7 @@ function burst(){ const c=document.createElement("div"); c.className="confetti f
 
 let typers=[]; let typed=new Set(), typedKey="";
 function afterRender(){
-  typers.forEach(clearInterval); typers=[];
+  typers.forEach(clearInterval); typers=[]; rvMount();
   // messages SMS séquentiels
   const seq=[...document.querySelectorAll("[data-seq]")]; const rm0=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches; if(!rm0) seq.forEach((e,i)=>{ e.style.display="none"; setTimeout(()=>{ e.style.display=""; e.classList.add("pop"); if(e.classList.contains("typing")) setTimeout(()=>e.remove(),900); }, 300+i*900); });
   // machine à écrire dans les bulles, l'une après l'autre
@@ -1384,9 +1468,9 @@ function afterRender(){
   const key=S.screen+":"+S.qi+":"+S.step; if(key!==typedKey){ typed=new Set(); typedKey=key; }
   if(!rm) els.forEach(el=>{ const full=el.textContent; if(typed.has(full)) return; typed.add(full); el.textContent=""; el.closest(".say").classList.add("wait");
     const dur=Math.min(1600,full.length*14); const say=el.closest(".say");
-    setTimeout(()=>{ say.classList.remove("wait"); say.classList.add("speaking"); let i=0;
-      const t=setInterval(()=>{ i+=2; el.textContent=full.slice(0,i); if(i>=full.length){ clearInterval(t); el.textContent=full; say.classList.remove("speaking"); } },14); typers.push(t);
-      say.onclick=()=>{ clearInterval(t); el.textContent=full; say.classList.remove("speaking"); }; }, delay);
+    setTimeout(()=>{ say.classList.remove("wait"); say.classList.add("speaking"); rvTalk(say,true); let i=0;
+      const t=setInterval(()=>{ i+=2; el.textContent=full.slice(0,i); if(i>=full.length){ clearInterval(t); el.textContent=full; say.classList.remove("speaking"); rvTalk(say,false); } },14); typers.push(t);
+      say.onclick=()=>{ clearInterval(t); el.textContent=full; say.classList.remove("speaking"); rvTalk(say,false); }; }, delay);
     delay+=dur+250; });
   // carte à glisser
   const sc=$("#sc"); if(sc){ let x0=null,dx=0; const deck=sc.parentElement;
@@ -1404,6 +1488,7 @@ function share(){ const m=match().slice(0,3).map((r,i)=>`${i+1}. ${CANDS[r.k].no
   const t=`Mon mandat de ${G("président","présidente")} 2027-2032 ressemble à :\n${m}\nRang : ${rang().nom}\n(Mandat 27, par Apprenti Politique. Ni un sondage, ni une consigne de vote.)`;
   try{ navigator.clipboard.writeText(t).then(()=>toast("Copié !"),()=>toast(t)); }catch(e){ toast(t); } }
 function toast(t){ const d=document.createElement("div"); d.className="toast"; d.textContent=t; document.body.appendChild(d); setTimeout(()=>d.remove(),2600); }
+rvInit();
 render();
 
 </script>

@@ -32,7 +32,7 @@ def click_text(page, txt, sel="button"):
 def play(v, w, h, reduced, shots=False, gender="f"):
     errs = []
     with sync_playwright() as p:
-        b = p.chromium.launch(executable_path="/usr/bin/google-chrome")
+        b = p.chromium.launch(executable_path="/usr/bin/google-chrome", args=["--allow-file-access-from-files"])
         ctx = b.new_context(viewport={"width":w,"height":h}, device_scale_factor=1, reduced_motion="reduce" if reduced else "no-preference",
                             has_touch=w<500, permissions=["clipboard-read","clipboard-write"])
         page = ctx.new_page(); page.set_default_timeout(8000); page.on("pageerror", lambda e: errs.append(str(e)))
@@ -137,6 +137,9 @@ def play(v, w, h, reduced, shots=False, gender="f"):
             click_text(page, "Méthode et sources"); page.wait_for_timeout(200); check(page, v, "méthode"); snap("52_method")
             click_text(page, "Retour"); page.wait_for_timeout(200)
             if not page.locator(".screen.verdict").count(): issue(v,"méthode","Retour ne ramène pas au verdict")
+        rv = page.evaluate("[RV.ok, RV.pool.length, RV.pool.filter(p=>p.ready).length, RV.pool.filter(p=>p.dead).length]")
+        if not rv[0] or rv[3]: issue(v,"rive",f"Rive non chargé ou instances en échec {rv}")
+        if rv[1] > 30: issue(v,"rive",f"trop d'instances Rive créées: {rv[1]}")
         rk = page.evaluate("rang().nom"); 
         if gender=="f" and "Présidente" not in rk: issue(v,"rang",rk)
         for e in errs: issue(v,"console",e)
@@ -144,7 +147,7 @@ def play(v, w, h, reduced, shots=False, gender="f"):
 
 def content():
     with sync_playwright() as p:
-        b = p.chromium.launch(executable_path="/usr/bin/google-chrome"); pg = b.new_page(); pg.goto(URL); pg.wait_for_timeout(300)
+        b = p.chromium.launch(executable_path="/usr/bin/google-chrome", args=["--allow-file-access-from-files"]); pg = b.new_page(); pg.goto(URL); pg.wait_for_timeout(300)
         r = pg.evaluate("""()=>{ const o=[];
           Q.forEach((q,i)=>{ ['A','B','C'].forEach(k=>{ const t=q.opts[k].t; if(t.length>75) o.push(`${q.id} option ${k} longue (${t.length})`); });
             if(q.hook.length>170) o.push(`${q.id} accroche longue (${q.hook.length})`);

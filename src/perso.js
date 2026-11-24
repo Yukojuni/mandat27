@@ -22,9 +22,12 @@ function hair(c){
   if(c.st==="curly") return `${[22,34,46,58,70,80].map((x,i)=>`<circle cx="${x}" cy="${18+(i%2)*4}" r="11" fill="${h}"/>`).join("")}<circle cx="18" cy="34" r="8" fill="${h}"/><circle cx="82" cy="34" r="8" fill="${h}"/>`;
   return `<path d="M14 80 Q10 10 50 10 Q90 10 86 80 L78 80 Q80 28 50 24 Q20 28 22 80Z" fill="${h}"/>`;
 }
-function perso(id, mood="happy", cls=""){
+function perso(id, mood="happy", cls="", o={}){
+  return `<span class="perso rv ${cls}" data-c="${id}" data-m="${mood}"${o.t?` data-t="${o.t}"`:""}${o.loop?` data-loop="${o.loop}"`:""} role="img" aria-label="${CAST[id].nom}">${persoSVG(id,mood)}</span>`;
+}
+function persoSVG(id, mood="happy"){
   const c=CAST[id];
-  return `<svg class="perso ${cls}" viewBox="0 0 100 124" aria-label="${c.nom}">
+  return `<svg class="pfb" viewBox="0 0 100 124" aria-hidden="true">
    <g class="bob">
     <path d="M14 124 V104 Q14 84 34 84 H66 Q86 84 86 104 V124Z" fill="${c.suit}"/>
     <path d="M50 84 V124 H86 V104 Q86 84 66 84Z" fill="${c.suit2}" opacity=".35"/>
@@ -45,7 +48,7 @@ function perso(id, mood="happy", cls=""){
 function say(id, text, opt={}){
   const c=CAST[id];
   return `<div class="say ${opt.right?"right":""} ${opt.cls||""}">
-    <div class="av">${perso(id, opt.mood||"happy", "talk")}<span class="who">${c.nom}<small>${c.role}</small></span></div>
+    <div class="av">${perso(id, opt.mood||"happy", "talk", {t:opt.t})}<span class="who">${c.nom}<small>${c.role}</small></span></div>
     <div class="bub ${opt.color||""}"><p data-type>${esc(text)}</p>${opt.extra||""}</div></div>`;
 }
 

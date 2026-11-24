@@ -69,7 +69,7 @@ V.home=()=>{ const started=Object.keys(S.ch).length;
   <div class="hero pop">${ICON.logo}</div>
   <h1 class="pop d1">MANDAT <span>27</span></h1>
   <p class="lead pop d2">Tu arrives à l'Élysée. 5 ans, 30 décisions réelles de la campagne 2027. Ton équipe t'aide à comprendre, toi tu tranches.</p>
-  <div class="cast pop d3">${["lea","karim","helene","sam","yuki"].map((k,i)=>`<div class="cm" style="--i:${i}">${perso(k,"happy")}<b>${CAST[k].nom}</b><small>${CAST[k].role}</small></div>`).join("")}</div>
+  <div class="cast pop d3">${["lea","karim","helene","sam","yuki"].map((k,i)=>`<div class="cm" style="--i:${i}">${perso(k,"happy","",{t:"wave"})}<b>${CAST[k].nom}</b><small>${CAST[k].role}</small></div>`).join("")}</div>
   <div class="stack pop d4">
    <button class="btn big" onclick="${started&&S.moi?"go('map')":"go('avatar')"}">${started?"Reprendre mon mandat":"Commencer"}</button>
    <button class="btn ghost" onclick="go('method')">Comment c'est calculé ?</button>
@@ -89,7 +89,7 @@ V.avatar=()=>{ const m=S.moi||{g:null,skin:1,hair:0,st:"short"}; if(!S.moi) S.mo
   <button class="btn big gold" ${m.g?"":"disabled"} onclick="photo()">${m.g?"Prendre la photo officielle":"Choisis président ou présidente"}</button>
   <p class="fine">Ton apparence ne change rien au résultat.</p></div>`; };
 V.elect=()=>`<div class="screen elect">
-  <div class="crowd">${["lea","sam","ines","marc","yuki","helene"].map((k,i)=>`<div class="fan" style="--i:${i}">${perso(k,"wow")}</div>`).join("")}</div>
+  <div class="crowd">${["lea","sam","ines","marc","yuki","helene"].map((k,i)=>`<div class="fan" style="--i:${i}">${perso(k,"wow","",{loop:"cheering"})}</div>`).join("")}</div>
   <div class="tv"><div class="tvin"><div class="bandeau">ÉDITION SPÉCIALE</div><div class="count"><span>20:00</span></div><div class="tvme">${perso("moi","happy")}</div><div class="reveal">C'EST TOI !</div></div></div>
   <div class="confetti">${[...Array(24)].map((_,i)=>`<i style="--i:${i}"></i>`).join("")}</div>
   <h2 class="pop d5">Dimanche 2 mai 2027, 20&nbsp;h</h2>
@@ -127,7 +127,7 @@ STEP.intro=q=>{ const f=fmtIntro(S.qi);
 STEP.quiz=q=>{ const z=QUIZ[q.id], a=S.quiz[q.id];
  return `${say("helene",z.q,{mood:"happy"})}
   <div class="quiz">${z.c.map((c,i)=>`<button class="qa ${a!=null?(i===z.ok?"ok":(i===a?"ko":"dim")):""}" ${a!=null?"disabled":""} onclick="answer(${i},this)">${esc(c)}</button>`).join("")}</div>
-  ${a!=null?`${say("helene",a===z.ok?"Bien vu ! Et voilà les autres chiffres clés.":"Pas tout à fait. Beaucoup de gens se trompent sur celui-là. Voilà les chiffres clés.",{mood:a===z.ok?"happy":"wow"})}
+  ${a!=null?`${say("helene",a===z.ok?"Bien vu ! Et voilà les autres chiffres clés.":"Pas tout à fait. Beaucoup de gens se trompent sur celui-là. Voilà les chiffres clés.",{mood:a===z.ok?"happy":"wow",t:a===z.ok?"cheer":"surprise"})}
    ${q.faits.map((f,i)=>`<div class="card fact pop d${i}"><p>${esc(f[0])}</p>${src(f[1],f[2])}</div>`).join("")}
    <div class="nav"><button class="btn ghost" onclick="step(-1)">Retour</button><button class="btn" onclick="step(1)">Suivant</button></div>`:""}`; };
 STEP.faits=q=>`${say("helene","Avant de décider, les chiffres. Touche les cartes pour les retourner.")}
@@ -164,7 +164,7 @@ STEP.vote=q=>{ const f=fmtVote(S.qi), O=["A","B","C"];
    <div class="mini-urne">${ICON.urne}</div>
    ${S.pick?`<div class="card pop">${det(S.pick)}<button class="btn" onclick="vote('${S.pick}')">Glisser dans l'urne</button></div>`:""}${extra}`; };
 
-V.drop=()=>`<div class="screen elect"><div class="stage"><div class="b-drop">${ICON.bulletin}</div>${ICON.urne}<div class="stamp">SIGNÉ</div></div></div>`;
+V.drop=()=>`<div class="screen elect"><div class="stage rvstage"><div class="rv rvbox" data-ab="BallotDrop" data-stamp="signe" data-t="drop"><div class="pfb"><div class="b-drop">${ICON.bulletin}</div>${ICON.urne}<div class="stamp">SIGNÉ</div></div></div></div></div>`;
 
 const UNES=["LE QUOTIDIEN","L'ÉCHO NATIONAL","LA DÉPÊCHE DU MATIN","LE JOURNAL DU SOIR"];
 V.result=()=>{ const q=Q[S.qi], o=S.ch[q.id];
@@ -177,7 +177,7 @@ V.result=()=>{ const q=Q[S.qi], o=S.ch[q.id];
   <div class="journal"><div class="mast">${UNES[S.qi%4]}<small>${esc(ANNEES[q.an].an)} · édition spéciale</small></div><div class="kw">${kw.toUpperCase()}</div><h2>${esc(op.t)}</h2><p>${G("Le président","La présidente")} a tranché sur ${esc(q.theme.toLowerCase())}.</p></div>
   <div class="hemibox pop d2">${hemicycle(sup)}<p><b>${sup} des 8</b> principaux candidats défendent ce choix. Noms cachés jusqu'à la fin.</p></div>
   <div class="grid3 pop d3"><div class="kpi"><small>Budget</small>${arrow(op.b)}</div><div class="kpi"><small>Climat</small>${climat?arrow(op.c):'<span class="eq">sans effet</span>'}</div><div class="kpi"><small>XP</small><b class="big">+20</b></div></div>
-  ${say("karim",sup>=5?"Ça devrait passer à l'Assemblée sans trop de casse.":sup>=3?"Ça passera, mais il faudra négocier.":"Accroche-toi : on va devoir convaincre presque tout le monde.",{mood:sup>=5?"happy":sup>=3?"neutral":"wow",cls:"pop d4"})}
+  ${say("karim",sup>=5?"Ça devrait passer à l'Assemblée sans trop de casse.":sup>=3?"Ça passera, mais il faudra négocier.":"Accroche-toi : on va devoir convaincre presque tout le monde.",{mood:sup>=5?"happy":sup>=3?"neutral":"wow",cls:"pop d4",t:sup>=5?"nod":sup>=3?null:"surprise"})}
   <div class="card lesson pop d5"><b>À retenir</b><p>${esc(q.lecon)}</p></div>
   <p class="fine">Les flèches sont des tendances indicatives, pas des prévisions chiffrées.</p>
   <button class="btn big" onclick="next()">Continuer</button></div>`; };
@@ -261,7 +261,7 @@ function burst(){ const c=document.createElement("div"); c.className="confetti f
 
 let typers=[]; let typed=new Set(), typedKey="";
 function afterRender(){
-  typers.forEach(clearInterval); typers=[];
+  typers.forEach(clearInterval); typers=[]; rvMount();
   // messages SMS séquentiels
   const seq=[...document.querySelectorAll("[data-seq]")]; const rm0=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches; if(!rm0) seq.forEach((e,i)=>{ e.style.display="none"; setTimeout(()=>{ e.style.display=""; e.classList.add("pop"); if(e.classList.contains("typing")) setTimeout(()=>e.remove(),900); }, 300+i*900); });
   // machine à écrire dans les bulles, l'une après l'autre
@@ -272,9 +272,9 @@ function afterRender(){
   const key=S.screen+":"+S.qi+":"+S.step; if(key!==typedKey){ typed=new Set(); typedKey=key; }
   if(!rm) els.forEach(el=>{ const full=el.textContent; if(typed.has(full)) return; typed.add(full); el.textContent=""; el.closest(".say").classList.add("wait");
     const dur=Math.min(1600,full.length*14); const say=el.closest(".say");
-    setTimeout(()=>{ say.classList.remove("wait"); say.classList.add("speaking"); let i=0;
-      const t=setInterval(()=>{ i+=2; el.textContent=full.slice(0,i); if(i>=full.length){ clearInterval(t); el.textContent=full; say.classList.remove("speaking"); } },14); typers.push(t);
-      say.onclick=()=>{ clearInterval(t); el.textContent=full; say.classList.remove("speaking"); }; }, delay);
+    setTimeout(()=>{ say.classList.remove("wait"); say.classList.add("speaking"); rvTalk(say,true); let i=0;
+      const t=setInterval(()=>{ i+=2; el.textContent=full.slice(0,i); if(i>=full.length){ clearInterval(t); el.textContent=full; say.classList.remove("speaking"); rvTalk(say,false); } },14); typers.push(t);
+      say.onclick=()=>{ clearInterval(t); el.textContent=full; say.classList.remove("speaking"); rvTalk(say,false); }; }, delay);
     delay+=dur+250; });
   // carte à glisser
   const sc=$("#sc"); if(sc){ let x0=null,dx=0; const deck=sc.parentElement;
@@ -292,4 +292,5 @@ function share(){ const m=match().slice(0,3).map((r,i)=>`${i+1}. ${CANDS[r.k].no
   const t=`Mon mandat de ${G("président","présidente")} 2027-2032 ressemble à :\n${m}\nRang : ${rang().nom}\n(Mandat 27, par Apprenti Politique. Ni un sondage, ni une consigne de vote.)`;
   try{ navigator.clipboard.writeText(t).then(()=>toast("Copié !"),()=>toast(t)); }catch(e){ toast(t); } }
 function toast(t){ const d=document.createElement("div"); d.className="toast"; d.textContent=t; document.body.appendChild(d); setTimeout(()=>d.remove(),2600); }
+rvInit();
 render();
