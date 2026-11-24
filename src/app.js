@@ -100,12 +100,14 @@ V.avatar=()=>{ const m=S.moi||{g:null,skin:1,hair:0,st:"short"}; if(!S.moi) S.mo
   <button class="btn big gold" ${m.g?"":"disabled"} onclick="photo()">${m.g?"Prendre la photo officielle":"Choisis président ou présidente"}</button>
   <p class="fine">Ton apparence ne change rien au résultat.</p></div>`; };
 V.elect=()=>`<div class="screen elect">
+  <div class="rv rvscene" data-ab="ElectionNight" onclick="skipScene(this)" aria-label="Soirée électorale : c'est toi !"><div class="pfb">
   <div class="crowd">${["lea","sam","ines","marc","yuki","helene"].map((k,i)=>`<div class="fan" style="--i:${i}">${perso(k,"wow","",{loop:"cheering"})}</div>`).join("")}</div>
   <div class="tv"><div class="tvin"><div class="bandeau">ÉDITION SPÉCIALE</div><div class="count"><span>20:00</span></div><div class="tvme">${perso("moi","happy")}</div><div class="reveal">C'EST TOI !</div></div></div>
-  <div class="confetti">${[...Array(24)].map((_,i)=>`<i style="--i:${i}"></i>`).join("")}</div>
+  <div class="confetti">${[...Array(24)].map((_,i)=>`<i style="--i:${i}"></i>`).join("")}</div></div></div>
+  <div class="esheet">
   <h2 class="pop d5">Dimanche 2 mai 2027, 20&nbsp;h</h2>
   ${say("karim",`Félicitations, ${TITRE()}. On a 5 ans et ${NQ()} dossiers brûlants. Je t'explique chaque fois, et c'est toi qui décides.`,{cls:"pop d5"})}
-  <button class="btn big pop d5" onclick="go('map')">Entrer à l'Élysée</button></div>`;
+  <button class="btn big pop d5" onclick="go('map')">Entrer à l'Élysée</button></div></div>`;
 
 V.map=()=>{ const nxt=Q.findIndex(q=>!S.ch[q.id]);
  return `<div class="screen map">${topbar()}
@@ -269,11 +271,12 @@ function answer(i,el){ const z=QUIZ[Q[S.qi].id]; S.quiz[Q[S.qi].id]=i; if(i===z.
 function vote(k){ const first=!S.ch[Q[S.qi].id]; S.ch[Q[S.qi].id]=k; S.pick=null; if(k!=="X"&&first) S.xp+=20; save(); if(k==="X"){ go("result"); return; } go("drop"); setTimeout(()=>go("result"),1300); }
 function next(){ if(S.back==="parcours"){ S.back=null; go("parcours"); return; } const q=Q[S.qi], yd=Q.filter(x=>x.an===q.an).every(x=>S.ch[x.id]);
   if(yd&&S.seenYear<q.an){ S.seenYear=q.an; go("bilan"); return; } if(Q.findIndex(x=>!S.ch[x.id])<0){ go("verdict"); return; } go("map"); }
+function skipScene(el){ el.classList.add("skipped"); const s=el._rv; const t=s&&s.inst&&s.inst.trigger("skip"); if(t) t.trigger(); }
 function pickMode(m){ setMode(m); S.modePicked=1; save(); go(S.moi&&S.moi.g?(Object.keys(S.ch).length?"map":"elect"):"avatar"); }
 function upgrade(m){ setMode(m); S.seenYear=-1; save(); go("map"); }
 function setAv(k,v){ S.moi[k]=v; if(k==="g"&&!S.moi.stTouched) S.moi.st=(v==="f"?"long":"short"); if(k==="st") S.moi.stTouched=1; setMoi(S.moi); const y=window.scrollY; render(); window.scrollTo(0,y); }
 function photo(){ const f=document.createElement("div"); f.className="flash"; document.body.appendChild(f); setTimeout(()=>{ f.remove(); go(Object.keys(S.ch).length?"map":"elect"); },450); }
-function reset(){ S=fresh(); setMode("complet"); try{localStorage.removeItem("mandat27v2");}catch(e){} render(); }
+function reset(){ S=fresh(); setMode("complet"); if(RV.ok) rvPrewarm(); try{localStorage.removeItem("mandat27v2");}catch(e){} render(); }
 function burst(){ const c=document.createElement("div"); c.className="confetti fixed"; c.innerHTML=[...Array(24)].map((_,i)=>`<i style="--i:${i}"></i>`).join(""); document.body.appendChild(c); setTimeout(()=>c.remove(),2600); }
 
 let typers=[]; let typed=new Set(), typedKey="";

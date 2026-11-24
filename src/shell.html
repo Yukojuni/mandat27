@@ -374,7 +374,22 @@ a{color:var(--blue)}
 .mt{flex:1}.mt b{display:block;font-family:"Lilita One",Nunito,sans-serif;font-weight:400;font-size:22px}.mt small{display:block;font-size:13px;opacity:.75;font-weight:800}
 .mn{font-family:"Lilita One",Nunito,sans-serif;font-size:30px;color:var(--blue)}
 .deeper{border-color:var(--sky1);box-shadow:0 5px 0 var(--sky2)}.deeper .btn{margin-top:10px}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.affiche .in{transform:rotateY(180deg)}.stamp{transform:translate(-50%,-50%) rotate(-10deg)}.stampc{opacity:1;transform:rotate(var(--r))}.seat.yes{fill:#8B5CF6}.confetti{display:none}.reveal{transform:scale(1)}.count{display:none}.tvme{transform:translate(-50%,0)}.flash{display:none}.bolt{transform:translate(-50%,-50%)}.stampu{transform:rotate(10deg)}}
+/* ───── soirée électorale Rive */
+.rvscene{aspect-ratio:auto;margin:-16px -18px 0;height:100dvh;background:#0B1736;overflow:hidden}
+.rvscene>.pfb{background:var(--bg)}
+.rvscene>.pfb .crowd{margin-top:170px}
+.rvscene.rv-on{cursor:pointer}
+.screen.elect:has(>.rvscene){padding-top:0}
+#app:has(.rvscene.rv-on){padding-bottom:0}
+.screen.elect:has(>.rvscene.rv-on){margin-bottom:-16px}
+.rvscene:not(.rv-on)>.pfb{padding-top:30px}
+.rvscene.rv-on ~ .esheet{position:absolute;left:-18px;right:-18px;bottom:0;margin:0;padding:18px 18px 24px;background:var(--bg);border-radius:28px 28px 0 0;box-shadow:0 -8px 0 rgba(19,35,75,.25);animation:sheetin .55s 4.6s cubic-bezier(.2,1.3,.4,1) both}
+.rvscene.rv-on.skipped ~ .esheet{animation-delay:.2s}
+.rvscene.rv-on ~ .esheet h2{margin-top:0}
+@keyframes sheetin{from{transform:translateY(110%)}to{transform:none}}
+.rvscene:not(.rv-on){height:auto;background:none;margin:0}
+.rvscene:not(.rv-on)>.pfb{position:relative}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.affiche .in{transform:rotateY(180deg)}.stamp{transform:translate(-50%,-50%) rotate(-10deg)}.stampc{opacity:1;transform:rotate(var(--r))}.seat.yes{fill:#8B5CF6}.confetti{display:none}.reveal{transform:scale(1)}.count{display:none}.tvme{transform:translate(-50%,0)}.flash{display:none}.rvscene.rv-on ~ .esheet{animation:none}.bolt{transform:translate(-50%,-50%)}.stampu{transform:rotate(10deg)}}
 </style>
 </head>
 <body>

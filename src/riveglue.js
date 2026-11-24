@@ -31,8 +31,9 @@ const RVPROBE=document.createElement("canvas"); RVPROBE.width=RVPROBE.height=6;
 function rvWaitSplash(slot){ const t0=performance.now();
   const iv=setInterval(()=>{ let dark=1; try{ const x=RVPROBE.getContext("2d",{willReadFrequently:true}); x.clearRect(0,0,6,6); x.drawImage(slot.canvas,0,0,6,6);
       const d=x.getImageData(0,0,6,6).data; let n=0; for(let i=0;i<d.length;i+=4) if(d[i]<30&&d[i+1]<30&&d[i+2]<30&&d[i+3]>200) n++; dark=n/36; }catch(_){ dark=0; }
-    if(dark<0.5&&performance.now()-t0>400 || performance.now()-t0>5000){ clearInterval(iv); setTimeout(()=>{ slot.ready=true; rvShow(slot); },120); } },150); }
-function rvShow(slot){ if(slot.host&&slot.ready&&!slot.dead){ slot.host.classList.add("rv-on"); if(slot.onReady){ const f=slot.onReady; slot.onReady=null; f(slot); } } }
+    if(dark<0.5&&performance.now()-t0>400 || performance.now()-t0>5000){ clearInterval(iv); if(slot.artboard==="ElectionNight"&&!slot.host) try{ slot.r.pause(); }catch(_){}
+      setTimeout(()=>{ slot.ready=true; rvShow(slot); }, slot.artboard==="ElectionNight"?0:120); } },60); }
+function rvShow(slot){ if(slot.artboard==="ElectionNight"&&!slot.host){ try{ slot.r.pause(); }catch(_){} } if(slot.host&&slot.ready&&!slot.dead){ slot.host.classList.add("rv-on"); if(slot.onReady){ const f=slot.onReady; slot.onReady=null; f(slot); } } }
 function rvSize(slot){ const w=slot.host.clientWidth||68, h=slot.host.clientHeight||84, d=Math.min(2,window.devicePixelRatio||1);
   if(slot.canvas.width!==Math.round(w*d)){ slot.canvas.width=Math.round(w*d); slot.canvas.height=Math.round(h*d); try{ slot.r.resizeDrawingSurfaceToCanvas(); }catch(_){} } }
 function rvTake(artboard, vmName){ let s=RV.pool.find(p=>!p.used&&!p.dead&&p.artboard===artboard); if(!s) s=rvCreate(artboard,vmName); s.used=true; return s; }
@@ -40,14 +41,18 @@ function rvMount(){
   if(!RV.ok) return;
   RV.pool.forEach(p=>{ p.used=false; });
   // on réattribue d'abord les instances encore affichées à leur même hôte
-  const hosts=[...document.querySelectorAll(".rv")];
+  const sceneReady=RV.pool.some(p=>p.artboard==="ElectionNight"&&p.ready&&!p.dead&&!p.fired);
+  const hosts=[...document.querySelectorAll(".rv")].filter(h=>!(sceneReady&&h.closest(".rvscene")&&!h.classList.contains("rvscene")));
   RV.pool.forEach(p=>{ p.host=null; });
   hosts.forEach(h=>{
-    const ab=h.dataset.ab||"Character", vm=ab==="BallotDrop"?"BallotDrop":"Character";
+    const ab=h.dataset.ab||"Character", vm=ab==="Character"?"Character":ab;
     const s=rvTake(ab,vm); s.host=h; h._rv=s;
     if(s.canvas.parentNode!==h) h.appendChild(s.canvas);
     h.classList.toggle("rv-on", s.ready&&!s.dead);
     const setup=sl=>{
+      if(ab==="ElectionNight"){ const pl=sl.inst.viewModel&&sl.inst.viewModel("player"); if(pl&&CAST.moi) rvApplyChar(pl,CAST.moi,"happy");
+        const b=sl.inst.boolean("reducedMotion"); if(b) b.value=RV.rm; sl.fired=true; sl.r.play(); rvSize(sl);
+        if(RV.rm){ const t=sl.inst.trigger("skip"); if(t) t.trigger(); } return; }
       if(ab==="BallotDrop"){ const e=sl.inst.enum("stampText"); if(e) try{ e.value=h.dataset.stamp||"signe"; }catch(_){} const b=sl.inst.boolean("reducedMotion"); if(b) b.value=RV.rm; }
       else { const c=CAST[h.dataset.c]; if(c) rvApplyChar(sl.inst,c,h.dataset.m); if(h.dataset.loop){ const b=sl.inst.boolean(h.dataset.loop); if(b) b.value=!RV.rm; } }
       sl.r.play(); rvSize(sl);
@@ -57,12 +62,13 @@ function rvMount(){
   });
   const park=rvPark(); RV.pool.forEach(p=>{ if(!p.used&&p.canvas.parentNode!==park) park.appendChild(p.canvas); });
   // l'urne est une animation à usage unique : on jette l'instance jouée et on en prépare une neuve hors champ
-  RV.pool.filter(p=>!p.used&&p.fired).forEach(p=>{ try{ p.r.cleanup(); }catch(_){} p.canvas.remove(); RV.pool.splice(RV.pool.indexOf(p),1); rvCreate(p.artboard,"BallotDrop"); });
+  RV.pool.filter(p=>!p.used&&p.fired).forEach(p=>{ try{ p.r.cleanup(); }catch(_){} p.canvas.remove(); RV.pool.splice(RV.pool.indexOf(p),1); rvCreate(p.artboard,p.artboard); });
 }
 function rvTalk(sayEl,on){ const h=sayEl&&sayEl.querySelector(".rv"); const s=h&&h._rv; if(s&&s.inst){ const b=s.inst.boolean("talking"); if(b) b.value=on; } }
 function rvPrewarm(){ // instances préparées hors champ pendant l'accueil
   const want=[["Character",9],["BallotDrop",1]];
-  want.forEach(([ab,n])=>{ const have=RV.pool.filter(p=>p.artboard===ab).length; for(let i=have;i<n;i++) rvCreate(ab, ab==="BallotDrop"?"BallotDrop":"Character"); });
+  if(!Object.keys(S.ch).length) want.push(["ElectionNight",1]); // seulement si la soirée électorale est encore à venir
+  want.forEach(([ab,n])=>{ const have=RV.pool.filter(p=>p.artboard===ab).length; for(let i=have;i<n;i++) rvCreate(ab, ab); });
 }
 function rvInit(){
   RV.rm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
