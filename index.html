@@ -422,6 +422,20 @@ a{color:var(--blue)}
 .slider input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:34px;height:34px;margin-top:-11px;border-radius:50%;background:#fff;border:5px solid var(--navy);box-shadow:0 4px 0 rgba(19,35,75,.3);cursor:grab}
 .slider input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:#fff;border:5px solid var(--navy);cursor:grab}
 .sl-lab span{font-family:"Lilita One",Nunito,sans-serif;font-weight:400;font-size:16px}
+/* ───── navigation : accueil, rythme */
+.homeopts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.homeopts .btn{font-size:16px;padding:10px 12px;line-height:1.15}
+.homeopts small{display:block;font-family:Nunito,sans-serif;font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:#5B6B94;margin-bottom:2px}
+.modechip{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;font:inherit;font-size:14px;color:var(--navy);background:#fff;border:2px solid var(--line);border-radius:14px;padding:10px 14px;margin:0 0 12px;cursor:pointer;min-height:44px}
+.modechip u{color:var(--blue);font-weight:900;text-decoration:none}
+/* ───── partage */
+.shov{position:fixed;inset:0;background:rgba(11,23,54,.72);z-index:20;display:flex;align-items:center;justify-content:center;padding:16px;animation:pop .2s both}
+.shbox{background:var(--bg,#F3F6FF);border-radius:26px;padding:16px;width:100%;max-width:420px;max-height:96vh;overflow:auto;text-align:center}
+.shimg{aspect-ratio:9/16;max-height:56vh;margin:0 auto 14px;border-radius:18px;overflow:hidden;background:#1C3FD1;display:flex;align-items:center;justify-content:center}
+.shimg img{width:100%;height:100%;object-fit:contain;display:block}
+.shbox a.btn{display:block;text-decoration:none;box-sizing:border-box}
+.spin{width:44px;height:44px;border-radius:50%;border:5px solid rgba(255,255,255,.3);border-top-color:#fff;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.affiche .in{transform:rotateY(180deg)}.stamp{transform:translate(-50%,-50%) rotate(-10deg)}.stampc{opacity:1;transform:rotate(var(--r))}.seat.yes{fill:#8B5CF6}.confetti{display:none}.reveal{transform:scale(1)}.count{display:none}.tvme{transform:translate(-50%,0)}.flash{display:none}.rvscene.rv-on ~ .esheet{animation:none}.bolt{transform:translate(-50%,-50%)}.stampu{transform:rotate(10deg)}}
 </style>
 </head>
@@ -1438,7 +1452,7 @@ function gauges(){
   <div class="xpbar" id="xpb">${S.moi?`<span class="me">${perso("moi","happy")}</span>`:""}<b>${r.nom}</b><div class="xpt"><i style="width:${r.next?((S.xp-r.base)/(r.next-r.base)*100):100}%"></i></div><span>${S.xp} XP</span></div>`;
 }
 function topbar(){ const done=Q.filter(q=>S.ch[q.id]).length, back=S.back==="parcours"&&S.screen==="q";
-  return `<header class="hdr"><button class="brand" onclick="go('map')" aria-label="Mandat 27 : retour à la carte">${ICON.logo}<span>MANDAT <b>27</b></span></button><button class="btn ghost sm" onclick="${back?"S.back=null;go('parcours')":"go('map')"}">${back?"Parcours":"Carte"}</button></header>
+  return `<header class="hdr"><button class="brand" onclick="go('home')" aria-label="Mandat 27 : retour à l'accueil">${ICON.logo}<span>MANDAT <b>27</b></span></button><button class="btn ghost sm" onclick="${back?"S.back=null;go('parcours')":"go('map')"}">${back?"Parcours":"Carte"}</button></header>
   <div class="top"><div class="prog"><i style="width:${done/NQ()*100}%"></i></div><div class="cnt">${done}/${NQ()}</div></div>${gauges()}`; }
 function src(l,u){ return u?`<a class="src" href="${esc(u)}" target="_blank" rel="noopener">${esc(l)} ↗</a>`:`<span class="src off">${esc(l)}</span>`; }
 
@@ -1454,6 +1468,7 @@ V.home=()=>{ const started=Object.keys(S.ch).length;
   <div class="stack pop d4">
    <button class="btn big" onclick="${started&&S.moi?"go('map')":"go('mode')"}">${started?"Reprendre mon mandat":"Commencer"}</button>
    <button class="btn ghost" onclick="go('method')">Comment c'est calculé ?</button>
+   ${started?`<div class="homeopts"><button class="btn ghost" onclick="go('mode')"><small>Rythme</small>${MODES[S.mode].nom} · ${Q.filter(q=>S.ch[q.id]).length}/${NQ()}</button><button class="btn ghost" onclick="go('avatar')"><small>Mon perso</small>${S.moi&&S.moi.g?G("Président","Présidente"):"À créer"}</button></div>`:""}
    ${started?`<button class="link" onclick="reset()">Tout recommencer</button>`:""}
   </div>
   <p class="fine">Ni un sondage, ni une consigne de vote. Aucun compte, rien n'est envoyé : tout reste sur ton téléphone. Personnages inventés.</p></div>`; };
@@ -1463,7 +1478,7 @@ V.mode=()=>{ const card=(k,ico,t)=>{ const m=MODES[k], n=m.ids?m.ids.length:QALL
  return `<div class="screen modes"><div class="tag">Ton mandat</div><h2 class="pop">Quel rythme pour tes 5 ans ?</h2>
   ${say("karim","Tu peux gouverner vite ou en profondeur. Plus tu prends de décisions, plus le portrait final sera fiable.")}
   <div class="stack pop d2">${card("rapide",'<svg viewBox="0 0 24 24" width="26" height="26"><path d="M13 2 4 14h7l-1 8 9-12h-7z" fill="#13234B"/></svg>',"environ 5 min")}${card("trimestriel",'<svg viewBox="0 0 24 24" width="26" height="26"><circle cx="12" cy="12" r="9" fill="#fff"/><path d="M12 12V3a9 9 0 0 1 9 9z" fill="#13234B"/></svg>',"environ 15 min")}${card("complet",'<svg viewBox="0 0 24 24" width="26" height="26"><path d="m12 2.5 2.9 6.2 6.6.7-5 4.5 1.4 6.6L12 17.2l-5.9 3.3 1.4-6.6-5-4.5 6.6-.7z" fill="#fff"/></svg>',"environ 30 min")}</div>
-  <p class="fine">Tu pourras toujours approfondir à la fin : tes réponses sont gardées.</p></div>`; };
+  ${Object.keys(S.ch).length?`<p class="fine"><b>Tes ${Object.keys(S.ch).length} réponses sont gardées</b> quel que soit le rythme : tu reprends là où tu en es. Celles qui ne font pas partie du mode choisi sont mises de côté et reviennent si tu passes en Complet.</p><button class="link" onclick="go(S.prevMode||'map')">Garder mon rythme actuel</button>`:`<p class="fine">Tu pourras toujours changer de rythme en route : tes réponses sont gardées.</p>`}</div>`; };
 V.avatar=()=>{ const m=S.moi||{g:null,skin:1,hair:0,st:"short"}; if(!S.moi) S.moi=m; setMoi(m);
  const sw=(arr,key,lab)=>`<div class="pick"><span>${lab}</span><div class="sws">${arr.map((c,i)=>`<button class="sw ${m[key]===i?"on":""}" style="background:${Array.isArray(c)?c[0]:c}" onclick="setAv('${key}',${i})" aria-label="${lab} ${i+1}"></button>`).join("")}</div></div>`;
  return `<div class="screen avatar">
@@ -1486,7 +1501,7 @@ V.elect=()=>`<div class="screen elect">
   <button class="btn big pop d5" onclick="go('map')">Entrer à l'Élysée</button></div></div>`;
 
 V.map=()=>{ const nxt=Q.findIndex(q=>!S.ch[q.id]);
- return `<div class="screen map">${topbar()}
+ return `<div class="screen map">${topbar()}<button class="modechip" onclick="go('mode')"><span>Rythme <b>${MODES[S.mode].nom}</b> · ${NQ()} décisions</span><u>Changer</u></button>
   ${nxt>=0?say("karim", nxt===0?`Voilà ta feuille de route, ${TITRE()}. On commence par les retraites : touche la première bulle.`:`Prochain dossier : ${Q[nxt].theme.toLowerCase()}. Format du vote : ${VOTE_NOM[fmtVote(nxt)].toLowerCase()}.`):say("karim","Mandat terminé. Les Français attendent ton bilan.",{mood:"wow"})}
   ${ANNEES.map((y,ai)=>{ const qs=Q.map((q,i)=>({q,i})).filter(o=>o.q.an===ai);
    return `<section class="year y${ai}"><div class="yh"><b>${y.an}</b><div><h3>${y.titre}</h3><p>${y.sous}</p></div></div>
@@ -1594,7 +1609,7 @@ V.verdict=()=>{ const m=match(), n=totals().n;
   ${say("lea","Ce n'est ni un sondage ni une consigne de vote : ça compare tes choix aux positions publiques au 23 novembre 2026. Va lire leurs programmes !",{right:1,color:"red"})}
   ${S.mode!=="complet"?`<div class="card deeper"><b>${S.mode==="rapide"?"Avec 5 décisions, ce résultat reste très indicatif.":"Envie d'un portrait plus précis ?"}</b><p>Tes réponses sont gardées : il te reste seulement les nouvelles décisions.</p>
    ${S.mode==="rapide"?`<button class="btn" onclick="upgrade('trimestriel')">Passer en Trimestriel (+10 décisions)</button>`:""}<button class="btn ghost" onclick="upgrade('complet')">Passer en Complet (+${30-NQ()} décisions)</button></div>`:""}
-  <div class="nav col"><button class="btn gold" onclick="go('parcours')">Revoir mon parcours</button><button class="btn" onclick="share()">Copier mon résultat</button><button class="btn ghost" onclick="go('method')">Méthode et sources</button><button class="link" onclick="reset()">Refaire un mandat</button></div>
+  <div class="nav col"><button class="btn gold" onclick="go('parcours')">Revoir mon parcours</button><button class="btn" onclick="share()">Partager mon résultat</button><button class="btn ghost" onclick="go('method')">Méthode et sources</button><button class="link" onclick="reset()">Refaire un mandat</button></div>
   <div id="det"></div></div>`; };
 
 V.parcours=()=>{
@@ -1637,7 +1652,7 @@ V.method=()=>`<div class="screen method"><button class="btn ghost sm" onclick="g
 // ───────── moteur
 function render(){ const jd=S.screen==="map"&&S.justDone; if(S.moi) setMoi(S.moi); if(!S.modePicked&&!Object.keys(S.ch).length&&!["home","method","mode"].includes(S.screen)) S.screen="mode";
   else if((S.screen!=="home"&&S.screen!=="avatar"&&S.screen!=="method"&&S.screen!=="mode")&&(!S.moi||!S.moi.g)) S.screen="avatar"; $("#app").innerHTML=V[S.screen](); window.scrollTo(0,0); save(); afterRender(); if(jd) S.justDone=null; }
-function go(s){ if(s==="method") S.prev=S.screen; S.screen=s; render(); }
+function go(s){ if(s==="method") S.prev=S.screen; if(s==="mode"&&S.screen!=="mode") S.prevMode=S.screen==="home"?"home":"map"; S.screen=s; render(); }
 function openQ(i){ S.qi=i; S.step=0; S.pick=null; go("q"); }
 function step(d){ const n=stepsOf(Q[S.qi]).length, key=Q[S.qi].id+":"+S.step; S.vu=S.vu||{}; if(d>0&&!S.vu[key]){ S.vu[key]=1; addXP(5); } S.step=Math.max(0,Math.min(n-1,S.step+d)); S.pick=null; render(); }
 function toVote(){ S.step=stepsOf(Q[S.qi]).length-1; S.pick=null; render(); }
@@ -1688,9 +1703,60 @@ function detail(k){
     return `<tr class="${me===his?"same":""}"><td>${esc(q.titre)}</td><td><b>${me}</b></td><td><b>${his}</b> <small>${LVL[p[0]]}</small><br>${p[2]?src(p[1],p[2]):`<a class="src off" href="https://www.france-vote.fr/candidats/${CANDS[k].fv}" target="_blank" rel="noopener">non sourcée (France-Vote) ↗</a>`}</td></tr>`; }).join("");
   $("#det").innerHTML=`<div class="card detail"><h3>${esc(CANDS[k].nom)} et toi</h3><table><tr><th>Décision</th><th>Toi</th><th>Candidat</th></tr>${rows}</table></div>`;
   $("#det").scrollIntoView({behavior:"smooth"}); }
-function share(){ const m=match().slice(0,3).map((r,i)=>`${i+1}. ${CANDS[r.k].nom} ${r.pct} %`).join("\n");
-  const t=`Mon mandat de ${G("président","présidente")} 2027-2032 ressemble à :\n${m}\nRang : ${rang().nom}\n(Mandat 27, par Apprenti Politique. Ni un sondage, ni une consigne de vote.)`;
-  try{ navigator.clipboard.writeText(t).then(()=>toast("Copié !"),()=>toast(t)); }catch(e){ toast(t); } }
+// ───────── carte de partage (image 1080×1920)
+const SITE="mandat27.netlify.app";
+function rr(x,X,Y,w,h,r){ x.beginPath(); x.moveTo(X+r,Y); x.arcTo(X+w,Y,X+w,Y+h,r); x.arcTo(X+w,Y+h,X,Y+h,r); x.arcTo(X,Y+h,X,Y,r); x.arcTo(X,Y,X+w,Y,r); x.closePath(); }
+function fitT(x,t,max,size,font){ let s=size; do{ x.font=`${font.replace("#",s)}`; s-=2; } while(x.measureText(t).width>max&&s>14); return t; }
+function svgImg(svg){ return new Promise(ok=>{ const s=svg.replace('<svg ','<svg xmlns="http://www.w3.org/2000/svg" ').replace(/class="[^"]*"/g,""); const im=new Image(); im.onload=()=>ok(im); im.onerror=()=>ok(null); im.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(s); }); }
+async function shareCard(){
+  try{ await Promise.all(['80px "Lilita One"','900 40px Nunito','800 40px Nunito'].map(f=>document.fonts.load(f))); }catch(e){}
+  const W=1080,H=1920, cv=document.createElement("canvas"); cv.width=W; cv.height=H; const x=cv.getContext("2d");
+  const L='"Lilita One", Nunito, sans-serif', N='Nunito, system-ui, sans-serif';
+  const m=match(), t=totals(), r=rang(), sou=Math.round(t.soutien*100);
+  // fond
+  const g=x.createLinearGradient(0,0,0,H); g.addColorStop(0,"#2A5BFF"); g.addColorStop(.55,"#1C3FD1"); g.addColorStop(1,"#13234B"); x.fillStyle=g; x.fillRect(0,0,W,H);
+  x.fillStyle="rgba(255,255,255,.07)"; for(let k=0;k<3;k++) for(let i=0;i<9+k*4;i++){ const R=300+k*120, a=Math.PI*i/(8+k*4); x.beginPath(); x.arc(W/2-R*Math.cos(a),700-R*Math.sin(a),16,0,7); x.fill(); }
+  // tricolore
+  [["#2A5BFF",0],["#fff",360],["#FF4B55",720]].forEach(([c,o])=>{ x.fillStyle=c; x.fillRect(o,0,360,18); });
+  // titre
+  x.textAlign="center"; x.fillStyle="#fff"; x.font=`120px ${L}`; const w1=x.measureText("MANDAT ").width, w2=x.measureText("27").width, x0=(W-w1-w2)/2; x.textAlign="left"; x.fillText("MANDAT ",x0,190); x.fillStyle="#FFC800"; x.fillText("27",x0+w1,190); x.textAlign="center";
+  x.font=`800 40px ${N}`; x.fillStyle="rgba(255,255,255,.85)"; x.fillText(`Mon mandat de ${G("président","présidente")} · 2027-2032`,W/2,255);
+  // avatar
+  x.fillStyle="rgba(255,255,255,.14)"; x.beginPath(); x.arc(W/2,470,190,0,7); x.fill();
+  const av=await svgImg(persoSVG("moi","happy")); if(av){ x.save(); x.beginPath(); x.arc(W/2,470,190,0,7); x.clip(); x.drawImage(av,W/2-165,300,330,409); x.restore(); }
+  rr(x,W/2-300,600,600,76,38); x.fillStyle="#FFC800"; x.fill(); x.fillStyle="#13234B"; fitT(x,r.nom,540,46,`#px ${L}`); x.fillText(r.nom,W/2,654);
+  // top 3
+  x.fillStyle="#fff"; x.font=`64px ${L}`; x.fillText("Mes choix ressemblent à…",W/2,790);
+  const cols=["#FFC800","#E6ECFA","#F2A65A"];
+  m.slice(0,3).forEach((c,i)=>{ const y=840+i*230; rr(x,70,y,940,200,40); x.fillStyle="#fff"; x.fill();
+    x.fillStyle=cols[i]; x.beginPath(); x.arc(160,y+100,58,0,7); x.fill(); x.fillStyle="#13234B"; x.font=`68px ${L}`; x.textAlign="center"; x.fillText(i+1,160,y+124);
+    x.textAlign="left"; fitT(x,CANDS[c.k].nom,500,56,`#px ${L}`); x.fillText(CANDS[c.k].nom,250,y+82);
+    x.font=`800 30px ${N}`; x.fillStyle="#5B6B94"; fitT(x,CANDS[c.k].parti,480,30,`800 #px ${N}`); x.fillText(CANDS[c.k].parti,250,y+124);
+    rr(x,250,y+146,560,22,11); x.fillStyle="#E6ECFA"; x.fill(); rr(x,250,y+146,Math.max(22,5.6*c.pct),22,11); x.fillStyle=i===0?"#2A5BFF":"#8EA6FF"; x.fill();
+    x.textAlign="right"; x.fillStyle="#13234B"; x.font=`76px ${L}`; x.fillText(c.pct+"%",975,y+128); x.textAlign="center"; });
+  // stats
+  const st=[["Décisions",String(t.n)],["Budget",(t.b>0?"+":t.b<0?"−":"")+Math.abs(t.b)],["Climat",(t.c>0?"+":t.c<0?"−":"")+Math.abs(t.c)],["Soutiens",sou+"%"]];
+  st.forEach(([l,v],i)=>{ const bx=70+i*240; rr(x,bx,1560,220,150,32); x.fillStyle="rgba(255,255,255,.14)"; x.fill();
+    x.fillStyle="#fff"; x.font=`64px ${L}`; x.fillText(v,bx+110,1640); x.font=`800 28px ${N}`; x.fillStyle="rgba(255,255,255,.8)"; x.fillText(l,bx+110,1684); });
+  // pied
+  x.fillStyle="#FFC800"; x.font=`52px ${L}`; x.fillText("Et toi, tu ferais quoi ?",W/2,1790);
+  x.fillStyle="#fff"; x.font=`900 36px ${N}`; x.fillText(SITE+"  ·  Apprenti Politique",W/2,1846);
+  x.fillStyle="rgba(255,255,255,.6)"; x.font=`700 24px ${N}`; x.fillText(`Mode ${MODES[S.mode].nom.toLowerCase()} · ni un sondage, ni une consigne de vote`,W/2,1888);
+  return new Promise(ok=>cv.toBlob(ok,"image/png"));
+}
+function shareText(){ const m=match().slice(0,3).map((r,i)=>`${i+1}. ${CANDS[r.k].nom} ${r.pct} %`).join("\n");
+  return `Mon mandat de ${G("président","présidente")} 2027-2032 ressemble à :\n${m}\nRang : ${rang().nom}\nEt toi ? https://${SITE}\n(Ni un sondage, ni une consigne de vote.)`; }
+async function share(){
+  const ov=document.createElement("div"); ov.className="shov"; ov.innerHTML=`<div class="shbox pop"><div class="shimg"><div class="spin"></div></div><div class="stack" id="shbtn"></div><button class="link" onclick="this.closest('.shov').remove()">Fermer</button></div>`;
+  ov.onclick=e=>{ if(e.target===ov) ov.remove(); }; document.body.appendChild(ov);
+  const blob=await shareCard(), url=URL.createObjectURL(blob), file=new File([blob],"mandat27.png",{type:"image/png"});
+  ov.querySelector(".shimg").innerHTML=`<img src="${url}" alt="Ma carte Mandat 27 : mes 3 candidats les plus proches et mes stats">`;
+  const canFile=navigator.canShare&&navigator.canShare({files:[file]});
+  const b=ov.querySelector("#shbtn");
+  b.innerHTML=`${canFile?`<button class="btn gold" id="shgo">Partager l'image</button>`:""}<a class="btn ${canFile?"ghost":"gold"}" download="mandat27.png" href="${url}">Télécharger l'image</a><button class="btn ghost" id="shtx">Copier le texte</button>`;
+  if(canFile) b.querySelector("#shgo").onclick=()=>navigator.share({files:[file],text:shareText()}).catch(()=>{});
+  b.querySelector("#shtx").onclick=()=>{ const t=shareText(); try{ navigator.clipboard.writeText(t).then(()=>toast("Texte copié !"),()=>toast(t)); }catch(e){ toast(t); } };
+}
 function toast(t){ const d=document.createElement("div"); d.className="toast"; d.textContent=t; document.body.appendChild(d); setTimeout(()=>d.remove(),2600); }
 rvInit();
 render();

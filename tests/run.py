@@ -135,9 +135,19 @@ def play(v, w, h, reduced, shots=False, gender="f", mode="complet"):
             page.locator(".hdr .btn", has_text="Parcours").click(); page.wait_for_timeout(200)
             if not page.locator(".screen.parcours").count(): issue(v,"parcours","retour au parcours KO")
             page.locator(".parcours > .btn.big").click(); page.wait_for_timeout(200)
-            click_text(page, "Copier mon résultat"); page.wait_for_timeout(300)
-            if gender=="f" and "présidente" not in page.evaluate("document.querySelector('.toast')?.textContent || navigator.clipboard && ''") and w<500:
-                pass
+            click_text(page, "Partager mon résultat"); page.wait_for_selector(".shimg img", timeout=8000); page.wait_for_timeout(300)
+            check(page, v, "partage"); snap("53_partage")
+            if page.evaluate("document.querySelector('.shimg img').naturalWidth")!=1080: issue(v,"partage","image de partage absente ou mauvaise taille")
+            page.locator(".shov .link", has_text="Fermer").click(); page.wait_for_timeout(200)
+            # navigation : logo -> accueil -> rythme -> retour
+            page.locator(".screen.verdict").count() and page.evaluate("go('map')"); page.wait_for_timeout(200)
+            page.locator(".hdr .brand").click(); page.wait_for_timeout(300)
+            if not page.locator(".screen.home .homeopts").count(): issue(v,"nav","accueil sans accès rythme/perso")
+            page.locator(".homeopts .btn").first.click(); page.wait_for_timeout(300)
+            if not page.locator(".screen.modes").count(): issue(v,"nav","bouton rythme KO")
+            click_text(page, "Garder mon rythme actuel"); page.wait_for_timeout(300)
+            if not page.locator(".screen.home").count(): issue(v,"nav","retour depuis rythme KO")
+            page.evaluate("go('verdict')"); page.wait_for_timeout(300)
             if mode != "complet" and not page.locator(".deeper").count(): issue(v,"verdict","pas de proposition d'approfondir")
             if mode == "complet" and page.locator(".deeper").count(): issue(v,"verdict","approfondir affiché en complet")
             click_text(page, "Méthode et sources"); page.wait_for_timeout(200); check(page, v, "méthode"); snap("52_method")

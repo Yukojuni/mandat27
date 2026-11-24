@@ -422,6 +422,20 @@ a{color:var(--blue)}
 .slider input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:34px;height:34px;margin-top:-11px;border-radius:50%;background:#fff;border:5px solid var(--navy);box-shadow:0 4px 0 rgba(19,35,75,.3);cursor:grab}
 .slider input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:#fff;border:5px solid var(--navy);cursor:grab}
 .sl-lab span{font-family:"Lilita One",Nunito,sans-serif;font-weight:400;font-size:16px}
+/* ───── navigation : accueil, rythme */
+.homeopts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.homeopts .btn{font-size:16px;padding:10px 12px;line-height:1.15}
+.homeopts small{display:block;font-family:Nunito,sans-serif;font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:#5B6B94;margin-bottom:2px}
+.modechip{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;font:inherit;font-size:14px;color:var(--navy);background:#fff;border:2px solid var(--line);border-radius:14px;padding:10px 14px;margin:0 0 12px;cursor:pointer;min-height:44px}
+.modechip u{color:var(--blue);font-weight:900;text-decoration:none}
+/* ───── partage */
+.shov{position:fixed;inset:0;background:rgba(11,23,54,.72);z-index:20;display:flex;align-items:center;justify-content:center;padding:16px;animation:pop .2s both}
+.shbox{background:var(--bg,#F3F6FF);border-radius:26px;padding:16px;width:100%;max-width:420px;max-height:96vh;overflow:auto;text-align:center}
+.shimg{aspect-ratio:9/16;max-height:56vh;margin:0 auto 14px;border-radius:18px;overflow:hidden;background:#1C3FD1;display:flex;align-items:center;justify-content:center}
+.shimg img{width:100%;height:100%;object-fit:contain;display:block}
+.shbox a.btn{display:block;text-decoration:none;box-sizing:border-box}
+.spin{width:44px;height:44px;border-radius:50%;border:5px solid rgba(255,255,255,.3);border-top-color:#fff;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.affiche .in{transform:rotateY(180deg)}.stamp{transform:translate(-50%,-50%) rotate(-10deg)}.stampc{opacity:1;transform:rotate(var(--r))}.seat.yes{fill:#8B5CF6}.confetti{display:none}.reveal{transform:scale(1)}.count{display:none}.tvme{transform:translate(-50%,0)}.flash{display:none}.rvscene.rv-on ~ .esheet{animation:none}.bolt{transform:translate(-50%,-50%)}.stampu{transform:rotate(10deg)}}
 </style>
 </head>
