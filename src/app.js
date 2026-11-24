@@ -154,8 +154,11 @@ STEP.debat=q=>`<div class="vs pop"><div class="side l">${perso("ines","happy","t
   ${say("ines",q.pour[0],{color:"green",extra:`<small class="att">Position défendue par : ${esc(q.pour[1])}</small>`})}
   ${say("marc",q.contre[0],{right:1,color:"red",extra:`<small class="att">Position défendue par : ${esc(q.contre[1])}</small>`})}`;
 STEP.ailleurs=q=>`<div class="yukihead pop">${perso("yuki","happy","talk big")}${ICON.globe}</div>
-  ${say("yuki","J'ai regardé comment d'autres pays ont fait. Aucun modèle n'est parfait, mais ça aide à voir les conséquences.")}
-  <div class="passport">${q.ailleurs.map((a,i)=>`<div class="stampc" style="--d:${0.5+i*0.45}s;--r:${[-6,5,-3][i]}deg"><b>${esc(a[0])}</b><p>${esc(a[1])}</p></div>`).join("")}</div>`;
+  ${say("yuki","J'ai regardé ce que d'autres pays ont fait, et surtout ce que ça a donné. Aucun modèle n'est parfait, mais ça aide à choisir.")}
+  <div class="passport">${q.ailleurs.map((a,i)=>{ const r=(AILLEURS[q.id]||[])[i]; const v=r&&VERDICTS[r[1]];
+    return `<div class="stampc" style="--d:${0.5+i*0.45}s;--r:${[-1.5,1.2,-1][i]}deg"><b>${esc(a[0])}</b>
+     <p class="did"><span class="pk">Ce qu'ils ont fait</span>${esc(a[1])}</p>
+     ${r?`<p class="res"><span class="vd" style="color:${v[1]};background:${v[2]}">${v[0]}</span>${esc(r[0])}</p>${src(r[2],r[3])}`:""}</div>`; }).join("")}</div>`;
 STEP.vote=q=>{ const f=fmtVote(S.qi), O=["A","B","C"];
  const det=k=>{ const o=q.opts[k]; return `<p><span class="pl g">Point fort</span>${esc(o.fort)}</p><p><span class="pl r">Point faible</span>${esc(o.faible)}</p><p class="rep"><span class="pl b">Ses défenseurs répondent</span>${esc(o.rep)}</p>`; };
  const extra=`<label class="imp"><input type="checkbox" ${S.imp[q.id]?"checked":""} onchange="S.imp['${q.id}']=this.checked;save()"> Ce sujet compte beaucoup pour moi (compte double)</label><button class="link" onclick="vote('X')">Je ne sais pas, je passe</button>`;
