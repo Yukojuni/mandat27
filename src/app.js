@@ -58,7 +58,8 @@ function gauges(){
   <div class="xpbar" id="xpb">${S.moi?`<span class="me">${perso("moi","happy")}</span>`:""}<b>${r.nom}</b><div class="xpt"><i style="width:${r.next?((S.xp-r.base)/(r.next-r.base)*100):100}%"></i></div><span>${S.xp} XP</span></div>`;
 }
 function topbar(){ const done=Object.keys(S.ch).length, back=S.back==="parcours"&&S.screen==="q";
-  return `<div class="top"><button class="btn ghost sm" onclick="${back?"S.back=null;go('parcours')":"go('map')"}">${back?"Parcours":"Carte"}</button><div class="prog"><i style="width:${done/30*100}%"></i></div><div class="cnt">${done}/30</div></div>${gauges()}`; }
+  return `<header class="hdr"><button class="brand" onclick="go('map')" aria-label="Mandat 27 : retour à la carte">${ICON.logo}<span>MANDAT <b>27</b></span></button><button class="btn ghost sm" onclick="${back?"S.back=null;go('parcours')":"go('map')"}">${back?"Parcours":"Carte"}</button></header>
+  <div class="top"><div class="prog"><i style="width:${done/30*100}%"></i></div><div class="cnt">${done}/30</div></div>${gauges()}`; }
 function src(l,u){ return u?`<a class="src" href="${esc(u)}" target="_blank" rel="noopener">${esc(l)} ↗</a>`:`<span class="src off">${esc(l)}</span>`; }
 
 // ───────── écrans

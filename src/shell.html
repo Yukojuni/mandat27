@@ -295,7 +295,7 @@ a{color:var(--blue)}
 .seat.yes{animation:seat .01s var(--d) forwards}
 @keyframes seat{to{fill:#8B5CF6}}
 .xpbar{display:flex;align-items:center;gap:8px;font-size:12px;margin-bottom:6px}
-.xpbar b{font-weight:900;white-space:nowrap}.xpbar span{font-weight:900;white-space:nowrap;opacity:.7}
+.xpbar b{font-weight:900;white-space:nowrap}.xpbar>span:last-child{font-weight:900;white-space:nowrap;opacity:.7}
 .xpt{flex:1;height:8px;background:var(--line);border-radius:9px;overflow:hidden}.xpt i{display:block;height:100%;background:var(--vio);transition:width .6s}
 .xpfly{position:absolute;transform:translateX(-50%);font-family:"Lilita One",Nunito,sans-serif;font-size:22px;color:var(--vio);pointer-events:none;animation:xp 1.2s ease-out forwards;z-index:20}
 @keyframes xp{to{transform:translate(-50%,-70px);opacity:0}}
@@ -358,6 +358,13 @@ a{color:var(--blue)}
 .pc-opt.mine{background:#EEF2FF;outline:2px solid var(--blue)}.pc-opt.mine .ol{background:var(--blue);color:#fff}
 .parcours>.btn.big{margin-top:18px}
 
+/* ───── en-tête */
+.hdr{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:10px;margin:-16px -18px 10px;padding:calc(10px + env(safe-area-inset-top)) 18px 10px;background:rgba(243,246,255,.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:2px solid var(--line)}
+.brand{display:flex;align-items:center;gap:9px;background:none;border:0;padding:4px 0;cursor:pointer;color:var(--navy);font:inherit}
+.brand .logo{width:34px;height:34px;flex:none;border-radius:10px;box-shadow:0 3px 0 var(--blue2)}
+.brand span{font-family:"Lilita One",Nunito,sans-serif;font-size:22px;letter-spacing:.5px;line-height:1}
+.brand span b{font-weight:400;color:var(--yel);-webkit-text-stroke:0}
+.top .prog{margin-left:0}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.affiche .in{transform:rotateY(180deg)}.stamp{transform:translate(-50%,-50%) rotate(-10deg)}.stampc{opacity:1;transform:rotate(var(--r))}.seat.yes{fill:#8B5CF6}.confetti{display:none}.reveal{transform:scale(1)}.count{display:none}.tvme{transform:translate(-50%,0)}.flash{display:none}.bolt{transform:translate(-50%,-50%)}.stampu{transform:rotate(10deg)}}
 </style>
 </head>
