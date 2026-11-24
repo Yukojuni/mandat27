@@ -29,7 +29,7 @@ def check(page, v, where):
 def click_text(page, txt, sel="button"):
     page.locator(sel, has_text=txt).first.click()
 
-def play(v, w, h, reduced, shots=False, gender="f"):
+def play(v, w, h, reduced, shots=False, gender="f", mode="complet"):
     errs = []
     with sync_playwright() as p:
         b = p.chromium.launch(executable_path="/usr/bin/google-chrome", args=["--allow-file-access-from-files"])
@@ -42,6 +42,10 @@ def play(v, w, h, reduced, shots=False, gender="f"):
         snap = lambda n: shots and page.screenshot(path=str(OUT/f"{v}_{n}.png"), full_page=True)
         check(page, v, "accueil"); snap("00_home")
         click_text(page, "Commencer"); page.wait_for_timeout(200)
+        check(page, v, "modes"); snap("005_modes")
+        page.locator(".mode").nth(["rapide","trimestriel","complet"].index(mode)).click(); page.wait_for_timeout(200)
+        NQ = page.evaluate("NQ()")
+        if NQ != {"rapide":5,"trimestriel":15,"complet":30}[mode]: issue(v,"modes",f"{NQ} décisions en mode {mode}")
         check(page, v, "avatar"); snap("01_avatar_vide")
         if page.locator("button.btn.gold").is_enabled(): issue(v,"avatar","bouton photo actif sans genre choisi")
         page.get_by_role("button", name="Présidente" if gender=="f" else "Président", exact=True).click()
@@ -57,7 +61,7 @@ def play(v, w, h, reduced, shots=False, gender="f"):
         click_text(page, "Entrer à l'Élysée"); page.wait_for_timeout(200)
         check(page, v, "carte"); snap("04_map")
         fmts_seen = set()
-        for n in range(30):
+        for n in range(NQ):
           try:
             nxt = page.locator(".node.next")
             if not nxt.count(): issue(v, f"décision {n+1}", "pas de bulle suivante sur la carte"); break
@@ -108,9 +112,9 @@ def play(v, w, h, reduced, shots=False, gender="f"):
                 if shots: page.wait_for_timeout(2500); snap(f"4{n}_bilan")
                 check(page, v, f"bilan après {n+1}")
                 page.locator(".screen.bilan .btn.big").click(); page.wait_for_timeout(200)
-            if n == 13:  # reprise après rechargement
+            if n == min(13, NQ-2):  # reprise après rechargement
                 page.reload(); page.wait_for_timeout(300)
-                if page.evaluate("Object.keys(S.ch).length") != 14: issue(v,"reprise","choix perdus au rechargement")
+                if page.evaluate("Object.keys(S.ch).length") != n+1 or page.evaluate("NQ()") != NQ: issue(v,"reprise","choix perdus au rechargement")
           except Exception as e:
             issue(v, f"décision {n+1}", "EXCEPTION " + str(e).split(chr(10))[0]); page.screenshot(path=str(OUT/f"{v}_fail_{n}.png"), full_page=True)
             page.evaluate("go('map')")
@@ -120,10 +124,10 @@ def play(v, w, h, reduced, shots=False, gender="f"):
             page.wait_for_timeout(0 if reduced else 3500); check(page, v, "verdict"); snap("50_verdict")
             page.locator(".affiche .link").first.click(); page.wait_for_timeout(500); check(page, v, "détail"); snap("51_detail")
             rows = page.locator(".detail tr").count()
-            if rows != 31: issue(v,"détail",f"{rows-1} lignes au lieu de 30")
+            if rows != NQ+1: issue(v,"détail",f"{rows-1} lignes au lieu de {NQ}")
             click_text(page, "Revoir mon parcours"); page.wait_for_timeout(300); check(page, v, "parcours"); snap("53_parcours")
             n_items = page.locator("details.pc-item").count()
-            if n_items != 30: issue(v,"parcours",f"{n_items} décisions au lieu de 30")
+            if n_items != NQ: issue(v,"parcours",f"{n_items} décisions au lieu de {NQ}")
             page.locator("details.pc-item summary").nth(4).click(); page.wait_for_timeout(200); check(page, v, "parcours ouvert"); snap("54_parcours_ouvert")
             if page.locator("details.pc-item[open] .pc-opt.mine").count()!=1: issue(v,"parcours","choix du joueur non surligné")
             page.locator("details.pc-item[open] .btn").click(); page.wait_for_timeout(200)
@@ -134,12 +138,19 @@ def play(v, w, h, reduced, shots=False, gender="f"):
             click_text(page, "Copier mon résultat"); page.wait_for_timeout(300)
             if gender=="f" and "présidente" not in page.evaluate("document.querySelector('.toast')?.textContent || navigator.clipboard && ''") and w<500:
                 pass
+            if mode != "complet" and not page.locator(".deeper").count(): issue(v,"verdict","pas de proposition d'approfondir")
+            if mode == "complet" and page.locator(".deeper").count(): issue(v,"verdict","approfondir affiché en complet")
             click_text(page, "Méthode et sources"); page.wait_for_timeout(200); check(page, v, "méthode"); snap("52_method")
             click_text(page, "Retour"); page.wait_for_timeout(200)
             if not page.locator(".screen.verdict").count(): issue(v,"méthode","Retour ne ramène pas au verdict")
         rv = page.evaluate("[RV.ok, RV.pool.length, RV.pool.filter(p=>p.ready).length, RV.pool.filter(p=>p.dead).length]")
         if not rv[0] or rv[3]: issue(v,"rive",f"Rive non chargé ou instances en échec {rv}")
         if rv[1] > 30: issue(v,"rive",f"trop d'instances Rive créées: {rv[1]}")
+        if mode == "rapide" and page.locator(".screen.verdict").count():
+            click_text(page, "Passer en Trimestriel"); page.wait_for_timeout(300)
+            st = page.evaluate("[NQ(), Q.filter(q=>S.ch[q.id]).length, document.querySelectorAll('.node.done').length]")
+            if st != [15,5,5]: issue(v,"approfondir",f"après passage en trimestriel: {st}")
+            check(page, v, "carte après approfondir")
         rk = page.evaluate("rang().nom"); 
         if gender=="f" and "Présidente" not in rk: issue(v,"rang",rk)
         for e in errs: issue(v,"console",e)
@@ -168,7 +179,7 @@ if __name__ == "__main__":
     mode = sys.argv[1] if len(sys.argv)>1 else "all"
     t0=time.time()
     if mode in ("all","fast"):
-        for i,(v,w,h) in enumerate(VIEWS): play(v,w,h,reduced=True, gender="mf"[i%2]); print("ok", v, round(time.time()-t0))
+        for i,(v,w,h) in enumerate(VIEWS): play(v,w,h,reduced=True, gender="mf"[i%2], mode=["rapide","trimestriel","complet","complet","trimestriel"][i]); print("ok", v, round(time.time()-t0))
     if mode in ("all","anim"):
         play("anim390",390,844,reduced=False,shots=True,gender="f"); print("ok anim", round(time.time()-t0))
     seen=set(); uniq=[i for i in issues if not (i in seen or seen.add(i))]

@@ -10,7 +10,7 @@ const ANNEES = [
  {an:2031, titre:"Changer les règles", sous:"Travail, droits, institutions."}
 ];
 
-const Q = [
+const QALL = [
 // ───────── 2027
 {id:"retraite", an:0, theme:"Retraites",
  titre:"À quel âge part-on à la retraite ?",
@@ -513,3 +513,11 @@ const EVENTS = [
  {an:3, si:s=>s.c>=0, titre:"Cap sur 2030", txt:"L'UE s'est engagée à réduire ses émissions de 55 % d'ici 2030 par rapport à 1990. Tes choix vont dans ce sens, mais la facture doit être partagée.", src:["Commission européenne, Fit for 55","https://www.consilium.europa.eu/fr/policies/fit-for-55/"]},
  {an:4, si:()=>true, titre:"Et si on demandait au peuple ?", txt:"Le dernier référendum national date de 2005 (traité européen, rejeté à 54,7 %). Plusieurs de tes choix pourraient en exiger un.", src:["Conseil constitutionnel, résultats 2005","https://www.conseil-constitutionnel.fr/"]}
 ];
+
+// Modes de jeu : sous-ensembles fixes, choisis pour couvrir des thèmes variés
+// et pour que les 8 candidats gardent des profils tous différents.
+const MODES = {
+ rapide:{nom:"Rapide", par:"1 décision par an", ids:["retraite","nucleaire","sol","europe","finvie"], min:5},
+ trimestriel:{nom:"Trimestriel", par:"3 décisions par an", ids:["retraite","smic","quotas","hopital","nucleaire","planchers","college","sol","cannabis","climat","europe","defense","h32","finvie","propor"], min:15},
+ complet:{nom:"Complet", par:"6 décisions par an", ids:null, min:30}
+};
