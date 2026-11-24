@@ -409,6 +409,19 @@ a{color:var(--blue)}
 .vd{display:table;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;padding:3px 8px;border-radius:999px;margin:4px 0 4px;}
 .stampc .res{border-top:2px dashed #E8D9C7;padding-top:8px}
 .stampc .src{margin-top:8px}
+/* ───── rappel de la question au vote */
+.qremind{background:var(--navy);color:#fff;border-radius:20px;padding:14px 16px;margin:8px 0 12px;box-shadow:0 5px 0 #0B1736}
+.qr-l{display:block;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.7px;color:var(--yel)}
+.qremind b{display:block;font-family:"Lilita One",Nunito,sans-serif;font-weight:400;font-size:21px;line-height:1.15;margin:4px 0 6px}
+.qremind p{margin:0;font-size:14px;opacity:.85;line-height:1.4}
+.pl.g,.pl.r,.pl.b{background:none;border:0;padding:0;border-radius:0}
+/* curseur stylé */
+.slider input[type=range]{-webkit-appearance:none;appearance:none;height:44px;background:transparent;margin:4px 0}
+.slider input[type=range]::-webkit-slider-runnable-track{height:12px;border-radius:9px;background:linear-gradient(90deg,var(--blue),var(--vio) 50%,var(--red))}
+.slider input[type=range]::-moz-range-track{height:12px;border-radius:9px;background:linear-gradient(90deg,var(--blue),var(--vio) 50%,var(--red))}
+.slider input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:34px;height:34px;margin-top:-11px;border-radius:50%;background:#fff;border:5px solid var(--navy);box-shadow:0 4px 0 rgba(19,35,75,.3);cursor:grab}
+.slider input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:#fff;border:5px solid var(--navy);cursor:grab}
+.sl-lab span{font-family:"Lilita One",Nunito,sans-serif;font-weight:400;font-size:16px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.affiche .in{transform:rotateY(180deg)}.stamp{transform:translate(-50%,-50%) rotate(-10deg)}.stampc{opacity:1;transform:rotate(var(--r))}.seat.yes{fill:#8B5CF6}.confetti{display:none}.reveal{transform:scale(1)}.count{display:none}.tvme{transform:translate(-50%,0)}.flash{display:none}.rvscene.rv-on ~ .esheet{animation:none}.bolt{transform:translate(-50%,-50%)}.stampu{transform:rotate(10deg)}}
 </style>
 </head>

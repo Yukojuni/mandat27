@@ -162,7 +162,7 @@ STEP.ailleurs=q=>`<div class="yukihead pop">${perso("yuki","happy","talk big")}$
 STEP.vote=q=>{ const f=fmtVote(S.qi), O=["A","B","C"];
  const det=k=>{ const o=q.opts[k]; return `<p><span class="pl g">Point fort</span>${esc(o.fort)}</p><p><span class="pl r">Point faible</span>${esc(o.faible)}</p><p class="rep"><span class="pl b">Ses défenseurs répondent</span>${esc(o.rep)}</p>`; };
  const extra=`<label class="imp"><input type="checkbox" ${S.imp[q.id]?"checked":""} onchange="S.imp['${q.id}']=this.checked;save()"> Ce sujet compte beaucoup pour moi (compte double)</label><button class="link" onclick="vote('X')">Je ne sais pas, je passe</button>`;
- const head=`<div class="vfmt pop">${VOTE_NOM[f]}</div>`;
+ const head=`<div class="qremind pop"><span class="qr-l">La question</span><b>${esc(q.titre).replace(/ ([?!:;])/g,'\u00a0$1')}</b><p>${esc(q.hook).replace(/ ([?!:;])/g,'\u00a0$1')}</p></div><div class="vfmt pop">${VOTE_NOM[f]}</div>`;
  if(f==="cartes") return `${head}${say("karim","Trois options sur la table. Touche-les pour voir leurs forces et faiblesses.")}
    ${O.map((k,i)=>`<div class="opt pop d${i}" id="o${k}" onclick="peek('${k}')"><div class="oh"><span class="ol">${k}</span><b>${esc(q.opts[k].t)}</b></div><div class="od">${det(k)}<button class="btn" onclick="event.stopPropagation();vote('${k}')">Je signe ce choix</button></div></div>`).join("")}${extra}`;
  if(f==="swipe") return `${head}${say("karim","Glisse la carte : à droite pour l'option A, à gauche pour l'option C. Le bouton du milieu, c'est le compromis.")}
@@ -175,8 +175,8 @@ STEP.vote=q=>{ const f=fmtVote(S.qi), O=["A","B","C"];
    return `${head}${say("karim","Conseil des ministres. Chacun défend une option. Touche un ministre pour l'écouter, puis suis celui qui te convainc.")}
    <div class="table">${O.map((k,i)=>`<button class="min ${S.pick===k?"sel":""}" onclick="pickMin('${k}')">${perso(mins[i],S.pick===k?"happy":"neutral","talk")}<span class="ol">${k}</span></button>`).join("")}</div>
    <div id="minsay">${S.pick?`${say(mins[O.indexOf(S.pick)],q.opts[S.pick].t,{extra:`<div class="dt">${det(S.pick)}</div>`})}<button class="btn" onclick="vote('${S.pick}')">Je suis ce conseil</button>`:`<p class="hint center">Personne n'a encore parlé.</p>`}</div>${extra}`; }
- if(f==="curseur") return `${head}${say("karim","Règle le curseur : plutôt pour, au milieu, plutôt contre. Le dossier change en direct.")}
-   <div class="slider pop"><div class="sl-lab"><span>Pour (A)</span><span>Compromis (B)</span><span>Contre (C)</span></div>
+ if(f==="curseur") return `${head}${say("karim","Fais glisser le curseur entre les trois options : A à gauche, C à droite, le compromis au milieu. Le dossier change en direct.")}
+   <div class="slider pop"><div class="sl-lab"><span>A</span><span>B · compromis</span><span>C</span></div>
     <input type="range" min="0" max="2" step="1" value="${O.indexOf(S.pick||"B")}" oninput="slide(this.value)" aria-label="Position">
     <div id="sldet" class="card"><b>${esc(q.opts[S.pick||"B"].t)}</b>${det(S.pick||"B")}</div>
     <button class="btn" onclick="vote(S.pick||'B')">Je valide cette position</button></div>${extra}`;

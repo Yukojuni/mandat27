@@ -409,6 +409,19 @@ a{color:var(--blue)}
 .vd{display:table;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;padding:3px 8px;border-radius:999px;margin:4px 0 4px;}
 .stampc .res{border-top:2px dashed #E8D9C7;padding-top:8px}
 .stampc .src{margin-top:8px}
+/* ───── rappel de la question au vote */
+.qremind{background:var(--navy);color:#fff;border-radius:20px;padding:14px 16px;margin:8px 0 12px;box-shadow:0 5px 0 #0B1736}
+.qr-l{display:block;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.7px;color:var(--yel)}
+.qremind b{display:block;font-family:"Lilita One",Nunito,sans-serif;font-weight:400;font-size:21px;line-height:1.15;margin:4px 0 6px}
+.qremind p{margin:0;font-size:14px;opacity:.85;line-height:1.4}
+.pl.g,.pl.r,.pl.b{background:none;border:0;padding:0;border-radius:0}
+/* curseur stylé */
+.slider input[type=range]{-webkit-appearance:none;appearance:none;height:44px;background:transparent;margin:4px 0}
+.slider input[type=range]::-webkit-slider-runnable-track{height:12px;border-radius:9px;background:linear-gradient(90deg,var(--blue),var(--vio) 50%,var(--red))}
+.slider input[type=range]::-moz-range-track{height:12px;border-radius:9px;background:linear-gradient(90deg,var(--blue),var(--vio) 50%,var(--red))}
+.slider input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:34px;height:34px;margin-top:-11px;border-radius:50%;background:#fff;border:5px solid var(--navy);box-shadow:0 4px 0 rgba(19,35,75,.3);cursor:grab}
+.slider input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:#fff;border:5px solid var(--navy);cursor:grab}
+.sl-lab span{font-family:"Lilita One",Nunito,sans-serif;font-weight:400;font-size:16px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.affiche .in{transform:rotateY(180deg)}.stamp{transform:translate(-50%,-50%) rotate(-10deg)}.stampc{opacity:1;transform:rotate(var(--r))}.seat.yes{fill:#8B5CF6}.confetti{display:none}.reveal{transform:scale(1)}.count{display:none}.tvme{transform:translate(-50%,0)}.flash{display:none}.rvscene.rv-on ~ .esheet{animation:none}.bolt{transform:translate(-50%,-50%)}.stampu{transform:rotate(10deg)}}
 </style>
 </head>
@@ -1520,7 +1533,7 @@ STEP.ailleurs=q=>`<div class="yukihead pop">${perso("yuki","happy","talk big")}$
 STEP.vote=q=>{ const f=fmtVote(S.qi), O=["A","B","C"];
  const det=k=>{ const o=q.opts[k]; return `<p><span class="pl g">Point fort</span>${esc(o.fort)}</p><p><span class="pl r">Point faible</span>${esc(o.faible)}</p><p class="rep"><span class="pl b">Ses défenseurs répondent</span>${esc(o.rep)}</p>`; };
  const extra=`<label class="imp"><input type="checkbox" ${S.imp[q.id]?"checked":""} onchange="S.imp['${q.id}']=this.checked;save()"> Ce sujet compte beaucoup pour moi (compte double)</label><button class="link" onclick="vote('X')">Je ne sais pas, je passe</button>`;
- const head=`<div class="vfmt pop">${VOTE_NOM[f]}</div>`;
+ const head=`<div class="qremind pop"><span class="qr-l">La question</span><b>${esc(q.titre).replace(/ ([?!:;])/g,'\u00a0$1')}</b><p>${esc(q.hook).replace(/ ([?!:;])/g,'\u00a0$1')}</p></div><div class="vfmt pop">${VOTE_NOM[f]}</div>`;
  if(f==="cartes") return `${head}${say("karim","Trois options sur la table. Touche-les pour voir leurs forces et faiblesses.")}
    ${O.map((k,i)=>`<div class="opt pop d${i}" id="o${k}" onclick="peek('${k}')"><div class="oh"><span class="ol">${k}</span><b>${esc(q.opts[k].t)}</b></div><div class="od">${det(k)}<button class="btn" onclick="event.stopPropagation();vote('${k}')">Je signe ce choix</button></div></div>`).join("")}${extra}`;
  if(f==="swipe") return `${head}${say("karim","Glisse la carte : à droite pour l'option A, à gauche pour l'option C. Le bouton du milieu, c'est le compromis.")}
@@ -1533,8 +1546,8 @@ STEP.vote=q=>{ const f=fmtVote(S.qi), O=["A","B","C"];
    return `${head}${say("karim","Conseil des ministres. Chacun défend une option. Touche un ministre pour l'écouter, puis suis celui qui te convainc.")}
    <div class="table">${O.map((k,i)=>`<button class="min ${S.pick===k?"sel":""}" onclick="pickMin('${k}')">${perso(mins[i],S.pick===k?"happy":"neutral","talk")}<span class="ol">${k}</span></button>`).join("")}</div>
    <div id="minsay">${S.pick?`${say(mins[O.indexOf(S.pick)],q.opts[S.pick].t,{extra:`<div class="dt">${det(S.pick)}</div>`})}<button class="btn" onclick="vote('${S.pick}')">Je suis ce conseil</button>`:`<p class="hint center">Personne n'a encore parlé.</p>`}</div>${extra}`; }
- if(f==="curseur") return `${head}${say("karim","Règle le curseur : plutôt pour, au milieu, plutôt contre. Le dossier change en direct.")}
-   <div class="slider pop"><div class="sl-lab"><span>Pour (A)</span><span>Compromis (B)</span><span>Contre (C)</span></div>
+ if(f==="curseur") return `${head}${say("karim","Fais glisser le curseur entre les trois options : A à gauche, C à droite, le compromis au milieu. Le dossier change en direct.")}
+   <div class="slider pop"><div class="sl-lab"><span>A</span><span>B · compromis</span><span>C</span></div>
     <input type="range" min="0" max="2" step="1" value="${O.indexOf(S.pick||"B")}" oninput="slide(this.value)" aria-label="Position">
     <div id="sldet" class="card"><b>${esc(q.opts[S.pick||"B"].t)}</b>${det(S.pick||"B")}</div>
     <button class="btn" onclick="vote(S.pick||'B')">Je valide cette position</button></div>${extra}`;
