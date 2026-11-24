@@ -57,8 +57,13 @@ function hemicycle(sup){
   return `<svg viewBox="0 0 220 124" class="hemi">${seats.map((s,i)=>`<circle cx="${s[0].toFixed(1)}" cy="${s[1].toFixed(1)}" r="5.4" class="seat ${i<yes?"yes":""}" style="--d:${(i*0.022).toFixed(3)}s"/>`).join("")}<rect x="96" y="104" width="28" height="14" rx="4" fill="#13234B"/></svg>`;
 }
 function gauges(){
-  const t=totals(), r=rang(), bar=(v,l,col,txt)=>`<div class="g"><div class="gl">${l}</div><div class="gb"><i style="width:${Math.max(6,Math.min(100,v))}%;background:${col}"></i></div><div class="gv">${txt}</div></div>`;
-  return `<div class="gauges">${bar(50+t.b*6,"Budget","#FFC800",(t.b>0?"+":"")+t.b)}${bar(50+t.c*10,"Climat","#3DDC84",(t.c>0?"+":"")+t.c)}${bar(t.n?t.soutien*100:50,"Soutiens","#8B5CF6",t.n?Math.round(t.soutien*100)+" %":"–")}</div>
+  const t=totals(), r=rang();
+  // Budget et Climat : jauges à deux sens, zéro au milieu (vert = mieux, rouge = pire)
+  const bip=(v,l,sc,words,tip)=>{ const p=Math.max(-50,Math.min(50,v*sc)), col=v>0?"#22B86A":v<0?"#FF4B55":"#AEB9D8", w=v>0?words[0]:v<0?words[1]:words[2];
+    return `<div class="g" title="${tip}"><div class="gl">${l}</div><div class="gb bip"><b></b><i style="left:${p<0?50+p:50}%;width:${Math.abs(p)}%;background:${col}"></i></div><div class="gv"><span style="color:${v>0?"#138A4C":v<0?"#E03540":"inherit"}">${v>0?"+":v<0?"−":""}${Math.abs(v)}</span> <small>${w}</small></div></div>`; };
+  const sou=t.n?Math.round(t.soutien*100):null;
+  return `<div class="gauges">${bip(t.b,"Budget",8,["économies","dépenses","équilibre"],"Tendance de tes choix sur les finances publiques")}${bip(t.c,"Climat",10,["mieux","pire","neutre"],"Tendance de tes choix sur le climat")}
+   <div class="g" title="Part moyenne des 8 candidats qui défendent tes choix"><div class="gl">Soutiens</div><div class="gb"><i style="width:${sou==null?0:Math.max(4,sou)}%;background:#8B5CF6"></i></div><div class="gv">${sou==null?"–":sou+" %"} <small>${sou==null?"":sou>=60?"large":sou>=35?"partagé":"isolé"}</small></div></div></div>
   <div class="xpbar" id="xpb">${S.moi?`<span class="me">${perso("moi","happy")}</span>`:""}<b>${r.nom}</b><div class="xpt"><i style="width:${r.next?((S.xp-r.base)/(r.next-r.base)*100):100}%"></i></div><span>${S.xp} XP</span></div>`;
 }
 function topbar(){ const done=Q.filter(q=>S.ch[q.id]).length, back=S.back==="parcours"&&S.screen==="q";
