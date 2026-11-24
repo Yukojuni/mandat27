@@ -364,6 +364,7 @@ a{color:var(--blue)}
 <body>
 <main id="app"></main>
 <script src="rive/rive.js"></script>
+<script src="rive/mandat27-riv.js"></script>
 <script>
 // Positions des 8 principaux candidats déclarés (sondages nov. 2026) sur 30 thèses.
 // Base : lecture éditoriale de France-Vote (france-vote.fr, données au 23/11/2026),
@@ -675,7 +676,9 @@ function rvInit(){
   RV.rm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
   if(typeof rive==="undefined") return;
   try{ rive.RuntimeLoader.setWasmUrl("rive/rive.wasm"); rive.Rive.suppressDeprecationWarn=true; }catch(_){}
-  fetch("rive/mandat27.riv").then(r=>{ if(!r.ok) throw 0; return r.arrayBuffer(); }).then(b=>{ RV.buf=b; RV.ok=true; rvPrewarm(); rvMount(); }).catch(()=>{});
+  const go=b=>{ RV.buf=b; RV.ok=true; rvPrewarm(); rvMount(); };
+  if(window.MANDAT27_RIV){ try{ const s=atob(window.MANDAT27_RIV), u=new Uint8Array(s.length); for(let i=0;i<s.length;i++) u[i]=s.charCodeAt(i); go(u.buffer); return; }catch(_){} }
+  fetch("rive/mandat27.riv").then(r=>{ if(!r.ok) throw 0; return r.arrayBuffer(); }).then(go).catch(()=>{});
 }
 
 // 30 décisions fixes, 6 par année. Option A = soutien net à la thèse,
