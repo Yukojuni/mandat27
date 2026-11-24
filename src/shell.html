@@ -135,7 +135,7 @@ a{color:var(--blue)}
 /* ───── V2 : personnages */
 .perso{display:block;width:100%;height:auto;overflow:visible}
 #rvpark{position:fixed;left:0;bottom:0;width:24px;height:24px;overflow:hidden;opacity:.01;pointer-events:none;z-index:-1}#rvpark canvas{width:24px;height:30px;display:block}
-.rv{position:relative;aspect-ratio:100/124}
+.rv{display:block;position:relative;aspect-ratio:100/124}
 .rv>.pfb{position:absolute;inset:0;width:100%;height:100%;overflow:visible;transition:opacity .25s}
 .rv>.rvc{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity .25s;pointer-events:none}
 .rv.rv-on>.rvc{opacity:1}.rv.rv-on>.pfb{opacity:0}
@@ -389,6 +389,13 @@ a{color:var(--blue)}
 @keyframes sheetin{from{transform:translateY(110%)}to{transform:none}}
 .rvscene:not(.rv-on){height:auto;background:none;margin:0}
 .rvscene:not(.rv-on)>.pfb{position:relative}
+/* ───── carte Rive */
+.node .dot{position:relative}
+.rvnode{position:absolute;left:50%;top:50%;width:92px;height:92px;transform:translate(-50%,-50%);aspect-ratio:auto;pointer-events:none}
+.dot:has(>.rvnode.rv-on){background:none!important;box-shadow:none!important;color:transparent;animation:none}
+.here:has(.rvmark){width:72px;left:-78px;top:-8px;animation:none}
+.here .rvmark{width:100%;aspect-ratio:1}
+.here .rvmark>.pfb svg{width:100%;height:100%}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.affiche .in{transform:rotateY(180deg)}.stamp{transform:translate(-50%,-50%) rotate(-10deg)}.stampc{opacity:1;transform:rotate(var(--r))}.seat.yes{fill:#8B5CF6}.confetti{display:none}.reveal{transform:scale(1)}.count{display:none}.tvme{transform:translate(-50%,0)}.flash{display:none}.rvscene.rv-on ~ .esheet{animation:none}.bolt{transform:translate(-50%,-50%)}.stampu{transform:rotate(10deg)}}
 </style>
 </head>

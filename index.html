@@ -135,7 +135,7 @@ a{color:var(--blue)}
 /* ───── V2 : personnages */
 .perso{display:block;width:100%;height:auto;overflow:visible}
 #rvpark{position:fixed;left:0;bottom:0;width:24px;height:24px;overflow:hidden;opacity:.01;pointer-events:none;z-index:-1}#rvpark canvas{width:24px;height:30px;display:block}
-.rv{position:relative;aspect-ratio:100/124}
+.rv{display:block;position:relative;aspect-ratio:100/124}
 .rv>.pfb{position:absolute;inset:0;width:100%;height:100%;overflow:visible;transition:opacity .25s}
 .rv>.rvc{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity .25s;pointer-events:none}
 .rv.rv-on>.rvc{opacity:1}.rv.rv-on>.pfb{opacity:0}
@@ -389,6 +389,13 @@ a{color:var(--blue)}
 @keyframes sheetin{from{transform:translateY(110%)}to{transform:none}}
 .rvscene:not(.rv-on){height:auto;background:none;margin:0}
 .rvscene:not(.rv-on)>.pfb{position:relative}
+/* ───── carte Rive */
+.node .dot{position:relative}
+.rvnode{position:absolute;left:50%;top:50%;width:92px;height:92px;transform:translate(-50%,-50%);aspect-ratio:auto;pointer-events:none}
+.dot:has(>.rvnode.rv-on){background:none!important;box-shadow:none!important;color:transparent;animation:none}
+.here:has(.rvmark){width:72px;left:-78px;top:-8px;animation:none}
+.here .rvmark{width:100%;aspect-ratio:1}
+.here .rvmark>.pfb svg{width:100%;height:100%}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.affiche .in{transform:rotateY(180deg)}.stamp{transform:translate(-50%,-50%) rotate(-10deg)}.stampc{opacity:1;transform:rotate(var(--r))}.seat.yes{fill:#8B5CF6}.confetti{display:none}.reveal{transform:scale(1)}.count{display:none}.tvme{transform:translate(-50%,0)}.flash{display:none}.rvscene.rv-on ~ .esheet{animation:none}.bolt{transform:translate(-50%,-50%)}.stampu{transform:rotate(10deg)}}
 </style>
 </head>
@@ -658,7 +665,7 @@ function rvPark(){ let p=document.getElementById("rvpark"); if(!p){ p=document.c
 function rvCreate(artboard, vmName){
   const canvas=document.createElement("canvas"); canvas.className="rvc"; canvas.width=100; canvas.height=124; rvPark().appendChild(canvas);
   const slot={artboard, canvas, r:null, inst:null, ready:false, used:false, born:performance.now()};
-  slot.r=new rive.Rive({ buffer:RV.buf.slice(0), canvas, artboard, stateMachines:artboard, autoplay:true, autoBind:false,
+  slot.r=new rive.Rive({ riveFile:RV.file, canvas, artboard, stateMachines:artboard, autoplay:true, autoBind:false,
     layout:new rive.Layout({fit:rive.Fit.Contain}),
     onLoad:()=>{ try{ const vm=slot.r.viewModelByName(vmName); slot.inst=vm.instance(); slot.r.bindViewModelInstance(slot.inst);
         rvWaitSplash(slot); if(slot.pending) slot.pending(slot); }catch(e){ slot.dead=true; } },
@@ -670,9 +677,9 @@ const RVPROBE=document.createElement("canvas"); RVPROBE.width=RVPROBE.height=6;
 function rvWaitSplash(slot){ const t0=performance.now();
   const iv=setInterval(()=>{ let dark=1; try{ const x=RVPROBE.getContext("2d",{willReadFrequently:true}); x.clearRect(0,0,6,6); x.drawImage(slot.canvas,0,0,6,6);
       const d=x.getImageData(0,0,6,6).data; let n=0; for(let i=0;i<d.length;i+=4) if(d[i]<30&&d[i+1]<30&&d[i+2]<30&&d[i+3]>200) n++; dark=n/36; }catch(_){ dark=0; }
-    if(dark<0.5&&performance.now()-t0>400 || performance.now()-t0>5000){ clearInterval(iv); if(slot.artboard==="ElectionNight"&&!slot.host) try{ slot.r.pause(); }catch(_){}
+    if(dark<0.5&&performance.now()-t0>400 || performance.now()-t0>5000){ clearInterval(iv); if(!slot.host&&slot.artboard!=="Character") try{ slot.r.pause(); }catch(_){}
       setTimeout(()=>{ slot.ready=true; rvShow(slot); }, slot.artboard==="ElectionNight"?0:120); } },60); }
-function rvShow(slot){ if(slot.artboard==="ElectionNight"&&!slot.host){ try{ slot.r.pause(); }catch(_){} } if(slot.host&&slot.ready&&!slot.dead){ slot.host.classList.add("rv-on"); if(slot.onReady){ const f=slot.onReady; slot.onReady=null; f(slot); } } }
+function rvShow(slot){ if(!slot.host){ try{ slot.r.pause(); }catch(_){} } if(slot.host&&slot.ready&&!slot.dead){ slot.host.classList.add("rv-on"); if(slot.onReady){ const f=slot.onReady; slot.onReady=null; f(slot); } } }
 function rvSize(slot){ const w=slot.host.clientWidth||68, h=slot.host.clientHeight||84, d=Math.min(2,window.devicePixelRatio||1);
   if(slot.canvas.width!==Math.round(w*d)){ slot.canvas.width=Math.round(w*d); slot.canvas.height=Math.round(h*d); try{ slot.r.resizeDrawingSurfaceToCanvas(); }catch(_){} } }
 function rvTake(artboard, vmName){ let s=RV.pool.find(p=>!p.used&&!p.dead&&p.artboard===artboard); if(!s) s=rvCreate(artboard,vmName); s.used=true; return s; }
@@ -684,7 +691,7 @@ function rvMount(){
   const hosts=[...document.querySelectorAll(".rv")].filter(h=>!(sceneReady&&h.closest(".rvscene")&&!h.classList.contains("rvscene")));
   RV.pool.forEach(p=>{ p.host=null; });
   hosts.forEach(h=>{
-    const ab=h.dataset.ab||"Character", vm=ab==="Character"?"Character":ab;
+    const ab=h.dataset.ab||"Character", vm=ab;
     const s=rvTake(ab,vm); s.host=h; h._rv=s;
     if(s.canvas.parentNode!==h) h.appendChild(s.canvas);
     h.classList.toggle("rv-on", s.ready&&!s.dead);
@@ -692,6 +699,13 @@ function rvMount(){
       if(ab==="ElectionNight"){ const pl=sl.inst.viewModel&&sl.inst.viewModel("player"); if(pl&&CAST.moi) rvApplyChar(pl,CAST.moi,"happy");
         const b=sl.inst.boolean("reducedMotion"); if(b) b.value=RV.rm; sl.fired=true; sl.r.play(); rvSize(sl);
         if(RV.rm){ const t=sl.inst.trigger("skip"); if(t) t.trigger(); } return; }
+      if(ab==="MapNode"||ab==="PlayerMarker"){
+        const b=sl.inst.boolean("reducedMotion"); if(b) b.value=RV.rm;
+        if(ab==="MapNode"){ ["state","theme"].forEach(k=>{ const e=sl.inst.enum(k); if(e&&h.dataset[k]) try{ e.value=h.dataset[k]; }catch(_){} }); }
+        else { const pl=sl.inst.viewModel&&sl.inst.viewModel("player"); const c=CAST[h.dataset.c]; if(pl&&c) rvApplyChar(pl,c,"happy"); }
+        sl.r.play(); rvSize(sl);
+        if(h.dataset.t){ const t=h.dataset.t; sl.onReady=x=>{ const tr=x.inst&&x.inst.trigger(t); if(tr) tr.trigger(); }; if(sl.ready) rvShow(sl); }
+        return; }
       if(ab==="BallotDrop"){ const e=sl.inst.enum("stampText"); if(e) try{ e.value=h.dataset.stamp||"signe"; }catch(_){} const b=sl.inst.boolean("reducedMotion"); if(b) b.value=RV.rm; }
       else { const c=CAST[h.dataset.c]; if(c) rvApplyChar(sl.inst,c,h.dataset.m); if(h.dataset.loop){ const b=sl.inst.boolean(h.dataset.loop); if(b) b.value=!RV.rm; } }
       sl.r.play(); rvSize(sl);
@@ -699,13 +713,14 @@ function rvMount(){
     };
     if(s.inst) setup(s); else s.pending=setup;
   });
-  const park=rvPark(); RV.pool.forEach(p=>{ if(!p.used&&p.canvas.parentNode!==park) park.appendChild(p.canvas); });
+  const park=rvPark(); RV.pool.forEach(p=>{ if(!p.used&&p.canvas.parentNode!==park){ park.appendChild(p.canvas); if(p.ready) try{ p.r.pause(); }catch(_){} } });
   // l'urne est une animation à usage unique : on jette l'instance jouée et on en prépare une neuve hors champ
   RV.pool.filter(p=>!p.used&&p.fired).forEach(p=>{ try{ p.r.cleanup(); }catch(_){} p.canvas.remove(); RV.pool.splice(RV.pool.indexOf(p),1); rvCreate(p.artboard,p.artboard); });
 }
 function rvTalk(sayEl,on){ const h=sayEl&&sayEl.querySelector(".rv"); const s=h&&h._rv; if(s&&s.inst){ const b=s.inst.boolean("talking"); if(b) b.value=on; } }
 function rvPrewarm(){ // instances préparées hors champ pendant l'accueil
-  const want=[["Character",9],["BallotDrop",1]];
+  const started=S.modePicked||Object.keys(S.ch).length;
+  const want=[["Character",9],["BallotDrop",1],["MapNode",started?NQ():0],["PlayerMarker",started?1:0]];
   if(!Object.keys(S.ch).length) want.push(["ElectionNight",1]); // seulement si la soirée électorale est encore à venir
   want.forEach(([ab,n])=>{ const have=RV.pool.filter(p=>p.artboard===ab).length; for(let i=have;i<n;i++) rvCreate(ab, ab); });
 }
@@ -713,7 +728,7 @@ function rvInit(){
   RV.rm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
   if(typeof rive==="undefined") return;
   try{ rive.RuntimeLoader.setWasmUrl("rive/rive.wasm"); rive.Rive.suppressDeprecationWarn=true; }catch(_){}
-  const go=b=>{ RV.buf=b; RV.ok=true; rvPrewarm(); rvMount(); };
+  const go=b=>{ RV.buf=b; RV.file=new rive.RiveFile({buffer:b}); RV.file.init().then(()=>{ RV.ok=true; rvPrewarm(); rvMount(); }).catch(()=>{}); };
   if(window.MANDAT27_RIV){ try{ const s=atob(window.MANDAT27_RIV), u=new Uint8Array(s.length); for(let i=0;i<s.length;i++) u[i]=s.charCodeAt(i); go(u.buffer); return; }catch(_){} }
   fetch("rive/mandat27.riv").then(r=>{ if(!r.ok) throw 0; return r.arrayBuffer(); }).then(go).catch(()=>{});
 }
@@ -1360,7 +1375,7 @@ V.map=()=>{ const nxt=Q.findIndex(q=>!S.ch[q.id]);
    return `<section class="year y${ai}"><div class="yh"><b>${y.an}</b><div><h3>${y.titre}</h3><p>${y.sous}</p></div></div>
    <div class="path">${qs.map(({q,i},j)=>{ const st=S.ch[q.id]?"done":(i===nxt?"next":(i<nxt||nxt<0?"open":"lock"));
      return `<button class="node ${st}" style="--x:${[0,46,72,46,0,-46][j]}px" ${st==="lock"?"disabled":""} onclick="openQ(${i})">
-      <span class="dot">${st==="done"?"✓":j+1}</span><span class="nt">${esc(q.theme)}</span>${st==="next"?`<span class="here">${perso(S.moi?"moi":"lea","happy")}</span>`:""}</button>`; }).join("")}</div></section>`; }).join("")}
+      <span class="dot">${st==="done"?"✓":j+1}<span class="rv rvnode" data-ab="MapNode" data-state="${{lock:"locked",open:"open",next:"next",done:"done"}[st]}" data-theme="${themeKey(q.theme)}"${S.justDone===q.id?' data-t="complete"':""} aria-hidden="true"></span></span><span class="nt">${esc(q.theme)}</span>${st==="next"?`<span class="here"><span class="rv rvmark" data-ab="PlayerMarker" data-c="${S.moi?"moi":"lea"}"${S.justDone?' data-t="advance"':""} aria-hidden="true"><span class="pfb">${persoSVG(S.moi?"moi":"lea","happy")}</span></span></span>`:""}</button>`; }).join("")}</div></section>`; }).join("")}
   ${nxt<0?`<button class="btn big gold" onclick="go('verdict')">Voir le verdict</button><button class="btn ghost" style="margin-top:12px" onclick="go('parcours')">Revoir mon parcours</button>`:""}</div>`; };
 
 V.q=()=>{ const q=Q[S.qi], steps=stepsOf(q), st=steps[S.step];
@@ -1500,8 +1515,8 @@ V.method=()=>`<div class="screen method"><button class="btn ghost sm" onclick="g
  <button class="link" onclick="reset()">Effacer mes réponses</button></div>`;
 
 // ───────── moteur
-function render(){ if(S.moi) setMoi(S.moi); if(!S.modePicked&&!Object.keys(S.ch).length&&!["home","method","mode"].includes(S.screen)) S.screen="mode";
-  else if((S.screen!=="home"&&S.screen!=="avatar"&&S.screen!=="method"&&S.screen!=="mode")&&(!S.moi||!S.moi.g)) S.screen="avatar"; $("#app").innerHTML=V[S.screen](); window.scrollTo(0,0); save(); afterRender(); }
+function render(){ const jd=S.screen==="map"&&S.justDone; if(S.moi) setMoi(S.moi); if(!S.modePicked&&!Object.keys(S.ch).length&&!["home","method","mode"].includes(S.screen)) S.screen="mode";
+  else if((S.screen!=="home"&&S.screen!=="avatar"&&S.screen!=="method"&&S.screen!=="mode")&&(!S.moi||!S.moi.g)) S.screen="avatar"; $("#app").innerHTML=V[S.screen](); window.scrollTo(0,0); save(); afterRender(); if(jd) S.justDone=null; }
 function go(s){ if(s==="method") S.prev=S.screen; S.screen=s; render(); }
 function openQ(i){ S.qi=i; S.step=0; S.pick=null; go("q"); }
 function step(d){ const n=stepsOf(Q[S.qi]).length, key=Q[S.qi].id+":"+S.step; S.vu=S.vu||{}; if(d>0&&!S.vu[key]){ S.vu[key]=1; addXP(5); } S.step=Math.max(0,Math.min(n-1,S.step+d)); S.pick=null; render(); }
@@ -1512,12 +1527,13 @@ function pickBal(k){ S.pick=k; render(); }
 function slide(v){ const k=["A","B","C"][+v], q=Q[S.qi]; S.pick=k; const o=q.opts[k];
   $("#sldet").innerHTML=`<b>${esc(o.t)}</b><p><span class="pl g">Point fort</span>${esc(o.fort)}</p><p><span class="pl r">Point faible</span>${esc(o.faible)}</p><p class="rep"><span class="pl b">Ses défenseurs répondent</span>${esc(o.rep)}</p>`; $("#sldet").classList.remove("pulse"); void $("#sldet").offsetWidth; $("#sldet").classList.add("pulse"); }
 function answer(i,el){ const z=QUIZ[Q[S.qi].id]; S.quiz[Q[S.qi].id]=i; if(i===z.ok){ addXP(15,el); } render(); if(i===z.ok) burst(); else { const b=document.querySelectorAll(".qa")[i]; b&&b.classList.add("shake"); } }
-function vote(k){ const first=!S.ch[Q[S.qi].id]; S.ch[Q[S.qi].id]=k; S.pick=null; if(k!=="X"&&first) S.xp+=20; save(); if(k==="X"){ go("result"); return; } go("drop"); setTimeout(()=>go("result"),1300); }
+const themeKey = t => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+function vote(k){ const first=!S.ch[Q[S.qi].id]; if(first&&k!=="X") S.justDone=Q[S.qi].id; S.ch[Q[S.qi].id]=k; S.pick=null; if(k!=="X"&&first) S.xp+=20; save(); if(k==="X"){ go("result"); return; } go("drop"); setTimeout(()=>go("result"),1300); }
 function next(){ if(S.back==="parcours"){ S.back=null; go("parcours"); return; } const q=Q[S.qi], yd=Q.filter(x=>x.an===q.an).every(x=>S.ch[x.id]);
   if(yd&&S.seenYear<q.an){ S.seenYear=q.an; go("bilan"); return; } if(Q.findIndex(x=>!S.ch[x.id])<0){ go("verdict"); return; } go("map"); }
 function skipScene(el){ el.classList.add("skipped"); const s=el._rv; const t=s&&s.inst&&s.inst.trigger("skip"); if(t) t.trigger(); }
-function pickMode(m){ setMode(m); S.modePicked=1; save(); go(S.moi&&S.moi.g?(Object.keys(S.ch).length?"map":"elect"):"avatar"); }
-function upgrade(m){ setMode(m); S.seenYear=-1; save(); go("map"); }
+function pickMode(m){ setMode(m); S.modePicked=1; save(); if(RV.ok) rvPrewarm(); go(S.moi&&S.moi.g?(Object.keys(S.ch).length?"map":"elect"):"avatar"); }
+function upgrade(m){ setMode(m); if(RV.ok) rvPrewarm(); S.seenYear=-1; save(); go("map"); }
 function setAv(k,v){ S.moi[k]=v; if(k==="g"&&!S.moi.stTouched) S.moi.st=(v==="f"?"long":"short"); if(k==="st") S.moi.stTouched=1; setMoi(S.moi); const y=window.scrollY; render(); window.scrollTo(0,y); }
 function photo(){ const f=document.createElement("div"); f.className="flash"; document.body.appendChild(f); setTimeout(()=>{ f.remove(); go(Object.keys(S.ch).length?"map":"elect"); },450); }
 function reset(){ S=fresh(); setMode("complet"); if(RV.ok) rvPrewarm(); try{localStorage.removeItem("mandat27v2");}catch(e){} render(); }

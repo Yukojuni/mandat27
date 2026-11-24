@@ -116,7 +116,7 @@ V.map=()=>{ const nxt=Q.findIndex(q=>!S.ch[q.id]);
    return `<section class="year y${ai}"><div class="yh"><b>${y.an}</b><div><h3>${y.titre}</h3><p>${y.sous}</p></div></div>
    <div class="path">${qs.map(({q,i},j)=>{ const st=S.ch[q.id]?"done":(i===nxt?"next":(i<nxt||nxt<0?"open":"lock"));
      return `<button class="node ${st}" style="--x:${[0,46,72,46,0,-46][j]}px" ${st==="lock"?"disabled":""} onclick="openQ(${i})">
-      <span class="dot">${st==="done"?"✓":j+1}</span><span class="nt">${esc(q.theme)}</span>${st==="next"?`<span class="here">${perso(S.moi?"moi":"lea","happy")}</span>`:""}</button>`; }).join("")}</div></section>`; }).join("")}
+      <span class="dot">${st==="done"?"✓":j+1}<span class="rv rvnode" data-ab="MapNode" data-state="${{lock:"locked",open:"open",next:"next",done:"done"}[st]}" data-theme="${themeKey(q.theme)}"${S.justDone===q.id?' data-t="complete"':""} aria-hidden="true"></span></span><span class="nt">${esc(q.theme)}</span>${st==="next"?`<span class="here"><span class="rv rvmark" data-ab="PlayerMarker" data-c="${S.moi?"moi":"lea"}"${S.justDone?' data-t="advance"':""} aria-hidden="true"><span class="pfb">${persoSVG(S.moi?"moi":"lea","happy")}</span></span></span>`:""}</button>`; }).join("")}</div></section>`; }).join("")}
   ${nxt<0?`<button class="btn big gold" onclick="go('verdict')">Voir le verdict</button><button class="btn ghost" style="margin-top:12px" onclick="go('parcours')">Revoir mon parcours</button>`:""}</div>`; };
 
 V.q=()=>{ const q=Q[S.qi], steps=stepsOf(q), st=steps[S.step];
@@ -256,8 +256,8 @@ V.method=()=>`<div class="screen method"><button class="btn ghost sm" onclick="g
  <button class="link" onclick="reset()">Effacer mes réponses</button></div>`;
 
 // ───────── moteur
-function render(){ if(S.moi) setMoi(S.moi); if(!S.modePicked&&!Object.keys(S.ch).length&&!["home","method","mode"].includes(S.screen)) S.screen="mode";
-  else if((S.screen!=="home"&&S.screen!=="avatar"&&S.screen!=="method"&&S.screen!=="mode")&&(!S.moi||!S.moi.g)) S.screen="avatar"; $("#app").innerHTML=V[S.screen](); window.scrollTo(0,0); save(); afterRender(); }
+function render(){ const jd=S.screen==="map"&&S.justDone; if(S.moi) setMoi(S.moi); if(!S.modePicked&&!Object.keys(S.ch).length&&!["home","method","mode"].includes(S.screen)) S.screen="mode";
+  else if((S.screen!=="home"&&S.screen!=="avatar"&&S.screen!=="method"&&S.screen!=="mode")&&(!S.moi||!S.moi.g)) S.screen="avatar"; $("#app").innerHTML=V[S.screen](); window.scrollTo(0,0); save(); afterRender(); if(jd) S.justDone=null; }
 function go(s){ if(s==="method") S.prev=S.screen; S.screen=s; render(); }
 function openQ(i){ S.qi=i; S.step=0; S.pick=null; go("q"); }
 function step(d){ const n=stepsOf(Q[S.qi]).length, key=Q[S.qi].id+":"+S.step; S.vu=S.vu||{}; if(d>0&&!S.vu[key]){ S.vu[key]=1; addXP(5); } S.step=Math.max(0,Math.min(n-1,S.step+d)); S.pick=null; render(); }
@@ -268,12 +268,13 @@ function pickBal(k){ S.pick=k; render(); }
 function slide(v){ const k=["A","B","C"][+v], q=Q[S.qi]; S.pick=k; const o=q.opts[k];
   $("#sldet").innerHTML=`<b>${esc(o.t)}</b><p><span class="pl g">Point fort</span>${esc(o.fort)}</p><p><span class="pl r">Point faible</span>${esc(o.faible)}</p><p class="rep"><span class="pl b">Ses défenseurs répondent</span>${esc(o.rep)}</p>`; $("#sldet").classList.remove("pulse"); void $("#sldet").offsetWidth; $("#sldet").classList.add("pulse"); }
 function answer(i,el){ const z=QUIZ[Q[S.qi].id]; S.quiz[Q[S.qi].id]=i; if(i===z.ok){ addXP(15,el); } render(); if(i===z.ok) burst(); else { const b=document.querySelectorAll(".qa")[i]; b&&b.classList.add("shake"); } }
-function vote(k){ const first=!S.ch[Q[S.qi].id]; S.ch[Q[S.qi].id]=k; S.pick=null; if(k!=="X"&&first) S.xp+=20; save(); if(k==="X"){ go("result"); return; } go("drop"); setTimeout(()=>go("result"),1300); }
+const themeKey = t => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+function vote(k){ const first=!S.ch[Q[S.qi].id]; if(first&&k!=="X") S.justDone=Q[S.qi].id; S.ch[Q[S.qi].id]=k; S.pick=null; if(k!=="X"&&first) S.xp+=20; save(); if(k==="X"){ go("result"); return; } go("drop"); setTimeout(()=>go("result"),1300); }
 function next(){ if(S.back==="parcours"){ S.back=null; go("parcours"); return; } const q=Q[S.qi], yd=Q.filter(x=>x.an===q.an).every(x=>S.ch[x.id]);
   if(yd&&S.seenYear<q.an){ S.seenYear=q.an; go("bilan"); return; } if(Q.findIndex(x=>!S.ch[x.id])<0){ go("verdict"); return; } go("map"); }
 function skipScene(el){ el.classList.add("skipped"); const s=el._rv; const t=s&&s.inst&&s.inst.trigger("skip"); if(t) t.trigger(); }
-function pickMode(m){ setMode(m); S.modePicked=1; save(); go(S.moi&&S.moi.g?(Object.keys(S.ch).length?"map":"elect"):"avatar"); }
-function upgrade(m){ setMode(m); S.seenYear=-1; save(); go("map"); }
+function pickMode(m){ setMode(m); S.modePicked=1; save(); if(RV.ok) rvPrewarm(); go(S.moi&&S.moi.g?(Object.keys(S.ch).length?"map":"elect"):"avatar"); }
+function upgrade(m){ setMode(m); if(RV.ok) rvPrewarm(); S.seenYear=-1; save(); go("map"); }
 function setAv(k,v){ S.moi[k]=v; if(k==="g"&&!S.moi.stTouched) S.moi.st=(v==="f"?"long":"short"); if(k==="st") S.moi.stTouched=1; setMoi(S.moi); const y=window.scrollY; render(); window.scrollTo(0,y); }
 function photo(){ const f=document.createElement("div"); f.className="flash"; document.body.appendChild(f); setTimeout(()=>{ f.remove(); go(Object.keys(S.ch).length?"map":"elect"); },450); }
 function reset(){ S=fresh(); setMode("complet"); if(RV.ok) rvPrewarm(); try{localStorage.removeItem("mandat27v2");}catch(e){} render(); }

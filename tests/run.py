@@ -145,7 +145,7 @@ def play(v, w, h, reduced, shots=False, gender="f", mode="complet"):
             if not page.locator(".screen.verdict").count(): issue(v,"méthode","Retour ne ramène pas au verdict")
         rv = page.evaluate("[RV.ok, RV.pool.length, RV.pool.filter(p=>p.ready).length, RV.pool.filter(p=>p.dead).length]")
         if not rv[0] or rv[3]: issue(v,"rive",f"Rive non chargé ou instances en échec {rv}")
-        if rv[1] > 30: issue(v,"rive",f"trop d'instances Rive créées: {rv[1]}")
+        if rv[1] > NQ + 15: issue(v,"rive",f"trop d'instances Rive créées: {rv[1]}")
         if mode == "rapide" and page.locator(".screen.verdict").count():
             click_text(page, "Passer en Trimestriel"); page.wait_for_timeout(300)
             st = page.evaluate("[NQ(), Q.filter(q=>S.ch[q.id]).length, document.querySelectorAll('.node.done').length]")
