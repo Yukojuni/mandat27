@@ -11,10 +11,10 @@ const CAST = {
 Object.keys(CAST).forEach(k=>CAST[k].kind=k);
 Object.assign(CAST.lea,{fn:"Citoyenne"}); Object.assign(CAST.karim,{fn:"Chef de cabinet"}); Object.assign(CAST.helene,{fn:"Économiste"}); Object.assign(CAST.sam,{fn:"Journaliste"}); Object.assign(CAST.yuki,{fn:"Diplomate"});
 function mouth(m){
-  if(m==="sad") return `<path d="M42 64 Q50 58 58 64" stroke="#13234B" stroke-width="3.2" fill="none" stroke-linecap="round"/>`;
-  if(m==="wow") return `<ellipse cx="50" cy="63" rx="5" ry="6" fill="#13234B"/>`;
-  if(m==="neutral") return `<path d="M43 62 H57" stroke="#13234B" stroke-width="3.2" stroke-linecap="round"/>`;
-  return `<g class="mo"><path d="M41 59 Q50 69 59 59 Z" fill="#13234B"/><path d="M45 63 Q50 66 55 63" fill="#FF7A85"/></g>`;
+  if(m==="sad") return `<path d="M43 63 Q50 57 57 63" stroke="#1C2554" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  if(m==="wow") return `<path d="M46 61 H54" stroke="#1C2554" stroke-width="3" stroke-linecap="round"/>`;
+  if(m==="neutral") return `<path d="M44 61 H56" stroke="#1C2554" stroke-width="3" stroke-linecap="round"/>`;
+  return `<path class="mo" d="M43 58 Q50 64 57 58" stroke="#1C2554" stroke-width="3" fill="none" stroke-linecap="round"/>`;
 }
 function hair(c){
   const h=c.hair;
@@ -40,11 +40,9 @@ function persoSVG(id, mood="happy", full=false){
     <rect x="22" y="18" width="56" height="58" rx="20" fill="${c.skin}"/>
     <path d="M50 18 H58 Q78 18 78 38 V56 Q78 76 58 76 H50Z" fill="${c.sh}" opacity=".45"/>
     ${c.st!=="long"?hair(c):`<path d="M22 40 Q22 16 50 16 Q78 16 78 40 Q66 28 50 28 Q34 28 22 40Z" fill="${c.hair}"/>`}
-    <g class="eyes"><ellipse cx="40" cy="46" rx="3.8" ry="4.6" fill="#13234B"/><ellipse cx="60" cy="46" rx="3.8" ry="4.6" fill="#13234B"/>
-     <circle cx="41.3" cy="44.4" r="1.3" fill="#fff"/><circle cx="61.3" cy="44.4" r="1.3" fill="#fff"/></g>
+    <g class="eyes"><circle cx="41" cy="46" r="3.8" fill="#1C2554"/><circle cx="59" cy="46" r="3.8" fill="#1C2554"/></g>
     ${c.glasses?`<g fill="none" stroke="#13234B" stroke-width="2.4"><rect x="31" y="38" width="17" height="15" rx="6"/><rect x="52" y="38" width="17" height="15" rx="6"/><path d="M48 45 H52"/></g>`:""}
-    <circle cx="33" cy="57" r="4" fill="#FF7A85" opacity=".45"/><circle cx="67" cy="57" r="4" fill="#FF7A85" opacity=".45"/>
-    ${mouth(mood)}
+        ${mouth(mood)}
    </g></svg>`;
 }
 // bulle de dialogue avec effet machine à écrire (data-type)
