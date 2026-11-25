@@ -8,6 +8,7 @@ const CAST = {
  ines:  {nom:"Inès",  role:"chercheuse",             skin:"#D9A27A", sh:"#C68D66", hair:"#2B1A12", st:"long",  suit:"#3DDC84", suit2:"#22B86A"},
  marc:  {nom:"Marc",  role:"chercheur",              skin:"#8D5A3B", sh:"#7A4B30", hair:"#2B1A12", st:"short", suit:"#FF8A3D", suit2:"#E06E22", glasses:1}
 };
+Object.keys(CAST).forEach(k=>CAST[k].kind=k);
 function mouth(m){
   if(m==="sad") return `<path d="M42 64 Q50 58 58 64" stroke="#13234B" stroke-width="3.2" fill="none" stroke-linecap="round"/>`;
   if(m==="wow") return `<ellipse cx="50" cy="63" rx="5" ry="6" fill="#13234B"/>`;
@@ -26,6 +27,7 @@ function perso(id, mood="happy", cls="", o={}){
   return `<span class="perso rv ${cls}" data-c="${id}" data-m="${mood}"${o.t?` data-t="${o.t}"`:""}${o.loop?` data-loop="${o.loop}"`:""} role="img" aria-label="${CAST[id].nom}">${persoSVG(id,mood)}</span>`;
 }
 function persoSVG(id, mood="happy"){
+  if(OBJSVG[id]) return `<svg class="pfb" viewBox="0 0 100 124" aria-hidden="true"><g class="bob">${OBJSVG[id]}</g></svg>`;
   const c=CAST[id];
   return `<svg class="pfb" viewBox="0 0 100 124" aria-hidden="true">
    <g class="bob">
@@ -57,4 +59,4 @@ const SKINS=[["#F5D0B0","#E5B994"],["#E8B48F","#D69F79"],["#C68B5E","#B07650"],[
 const HAIRS=["#15151F","#5A3A22","#C98A3B","#E07A2E","#C9CEDD","#6B34A8"];
 const STYLES=[["short","Courts"],["curly","Bouclés"],["bob","Carré"],["long","Longs"],["bun","Chignon"]];
 function setMoi(m){ const s=SKINS[m.skin]||SKINS[1];
-  CAST.moi={nom:"Toi", role:m.g==="m"?"le président":"la présidente", skin:s[0], sh:s[1], hair:HAIRS[m.hair]||HAIRS[0], st:m.st||"short", suit:"#13234B", suit2:"#0B1736", tie:m.g==="m"?"#FF4B55":null}; }
+  CAST.moi={kind:"player", nom:"Toi", role:m.g==="m"?"le président":"la présidente", skin:s[0], sh:s[1], hair:HAIRS[m.hair]||HAIRS[0], st:m.st||"short", suit:"#13234B", suit2:"#0B1736", tie:m.g==="m"?"#FF4B55":null}; }

@@ -11,7 +11,7 @@ function rvApplyChar(inst, c, mood){
   col("skinColor",c.skin); col("skinShade",c.sh); col("hairColor",c.hair);
   col("outfitColor",c.suit); col("outfitShade",c.suit2); col("tieColor",c.tie||"#FFC800");
   const e=(k,v)=>{ const p=inst.enum(k); if(p&&v) try{ p.value=v; }catch(_){} };
-  e("hairStyle",c.st); e("mood",mood||"happy");
+  e("kind",c.kind); e("hairStyle",c.st); e("mood",mood||"happy");
   const b=(k,v)=>{ const p=inst.boolean(k); if(p) p.value=!!v; };
   b("tie",!!c.tie); b("glasses",!!c.glasses); b("reducedMotion",RV.rm); b("talking",false); b("cheering",false);
 }
