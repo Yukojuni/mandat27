@@ -532,7 +532,14 @@ a{color:var(--blue)}
 .y0 .yh{background:var(--ink)}.y1 .yh{background:var(--red)}.y2 .yh{background:var(--blue)}.y3 .yh{background:var(--ink)}.y4 .yh{background:var(--red)}
 .y0 .yh b,.y1 .yh b,.y2 .yh b,.y3 .yh b,.y4 .yh b{background:var(--yel);color:var(--ink)}
 .yh h3{font-size:21px;letter-spacing:1px;color:#FBF6EA}.yh p{color:#FBF6EA;opacity:.9}
-.path{background:repeating-linear-gradient(var(--ink) 0 6px,transparent 6px 16px) center/3px 100% no-repeat}
+.path{position:relative;background:none}
+.route{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
+.path .node{position:relative;z-index:1}
+.year{position:relative}
+.land{position:absolute;left:-8px;top:262px;width:128px;height:146px;pointer-events:none}
+.node.lock .dot{opacity:1;background:var(--bg);color:#8A8FA8;border-color:#8A8FA8;box-shadow:4px 4px 0 #8A8FA8}
+.node.lock{opacity:1}
+.node.lock .nt{color:#555A78;border-color:#8A8FA8}
 .node .dot{border:3px solid var(--ink);background:var(--paper);color:var(--ink);box-shadow:4px 4px 0 var(--ink);font-size:28px;width:66px;height:66px}
 .node.done .dot{background:var(--ink);color:#FBF6EA;box-shadow:4px 4px 0 var(--ink)}
 .node.next .dot,.node.open .dot{background:var(--red);color:#FBF6EA;box-shadow:4px 4px 0 var(--ink)}

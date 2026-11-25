@@ -120,7 +120,7 @@ V.map=()=>{ const nxt=Q.findIndex(q=>!S.ch[q.id]);
  return `<div class="screen map">${topbar()}<button class="modechip" onclick="go('mode')"><span>Rythme <b>${MODES[S.mode].nom}</b> · ${NQ()} décisions</span><u>Changer</u></button>
   ${nxt>=0?say("karim", nxt===0?`Voilà ta feuille de route, ${TITRE()}. On commence par les retraites : touche la première bulle.`:`Prochain dossier : ${Q[nxt].theme.toLowerCase()}. Format du vote : ${VOTE_NOM[fmtVote(nxt)].toLowerCase()}.`):say("karim","Mandat terminé. Les Français attendent ton bilan.",{mood:"wow"})}
   ${ANNEES.map((y,ai)=>{ const qs=Q.map((q,i)=>({q,i})).filter(o=>o.q.an===ai);
-   return `<section class="year y${ai}"><div class="yh"><b>${y.an}</b><div><h3>${y.titre}</h3><p>${y.sous}</p></div></div>
+   return `<section class="year y${ai}">${landSVG(ai)}<div class="yh"><b>${y.an}</b><div><h3>${y.titre}</h3><p>${y.sous}</p></div></div>
    <div class="path">${qs.map(({q,i},j)=>{ const st=S.ch[q.id]?"done":(i===nxt?"next":(i<nxt||nxt<0?"open":"lock"));
      return `<button class="node ${st}" style="--x:${[0,46,72,46,0,-46][j]}px" ${st==="lock"?"disabled":""} onclick="openQ(${i})">
       <span class="dot">${st==="done"?"✓":j+1}<span class="rv rvnode" data-ab="MapNode" data-state="${{lock:"locked",open:"open",next:"next",done:"done"}[st]}" data-theme="${themeKey(q.theme)}"${S.justDone===q.id?' data-t="complete"':""} aria-hidden="true"></span></span><span class="nt">${esc(q.theme)}</span>${st==="next"?`<span class="here"><span class="rv rvmark" data-ab="PlayerMarker" data-c="${S.moi?"moi":"lea"}"${S.justDone?' data-t="advance"':""} aria-hidden="true"><span class="pfb">${persoSVG(S.moi?"moi":"lea","happy")}</span></span></span>`:""}</button>`; }).join("")}</div></section>`; }).join("")}
@@ -292,7 +292,39 @@ function reset(){ S=fresh(); setMode("complet"); if(RV.ok) rvPrewarm(); try{loca
 function burst(){ const c=document.createElement("div"); c.className="confetti fixed"; c.innerHTML=[...Array(24)].map((_,i)=>`<i style="--i:${i}"></i>`).join(""); document.body.appendChild(c); setTimeout(()=>c.remove(),2600); }
 
 let typers=[]; let typed=new Set(), typedKey="";
-function afterRender(){
+// ───────── carte : un monument de Paris par année, chemin qui relie vraiment les étapes
+const INK="#1C2554", PAP="#FBF6EA", STN="#D9CDB4";
+const tree=(x,y,r=13)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#3E9B5C" stroke="${INK}" stroke-width="2.5"/><circle cx="${x-4}" cy="${y-4}" r="${r*.4}" fill="#5CB877"/><rect x="${x-2}" y="${y+r-2}" width="4" height="9" fill="${INK}"/>`;
+const flagS=(x,y)=>`<rect x="${x-1}" y="${y}" width="2.5" height="26" fill="${INK}"/><rect x="${x+1}" y="${y}" width="6" height="12" fill="#2F5BEA"/><rect x="${x+7}" y="${y}" width="6" height="12" fill="${PAP}"/><rect x="${x+13}" y="${y}" width="6" height="12" fill="#E5392B"/>`;
+const LANDS=[
+ // 2027 · l'Élysée
+ `<path d="M8 92 L20 70 H120 L132 92Z" fill="#2F5BEA" stroke="${INK}" stroke-width="3"/><rect x="14" y="90" width="112" height="56" fill="${PAP}" stroke="${INK}" stroke-width="3"/><path d="M44 92 L70 74 L96 92Z" fill="${PAP}" stroke="${INK}" stroke-width="3"/>${[50,62,74,86].map(x=>`<rect x="${x}" y="96" width="5" height="50" fill="${INK}"/>`).join("")}${[20,32,102,114].map(x=>`<path d="M${x} 130 V110 a4 4 0 0 1 8 0 V130Z" fill="#F5C431" stroke="${INK}" stroke-width="2"/>`).join("")}${flagS(70,46)}${tree(10,150,12)}${tree(132,150,12)}`,
+ // 2028 · la Seine et un pont
+ `<path d="M0 104 Q70 92 140 104 V140 Q70 128 0 140Z" fill="#2F5BEA" stroke="${INK}" stroke-width="3"/><path d="M14 118 Q70 108 126 118" stroke="${PAP}" stroke-width="2" fill="none" opacity=".6"/><rect x="22" y="94" width="96" height="12" rx="3" fill="${STN}" stroke="${INK}" stroke-width="2.5"/>${[28,58,88].map(x=>`<path d="M${x} 106 v20 a12 9 0 0 1 24 0 v-20" fill="${STN}" stroke="${INK}" stroke-width="2.5"/>`).join("")}<path d="M88 146 h32 l-6 8 h-20Z" fill="${PAP}" stroke="${INK}" stroke-width="2"/>${tree(20,72)}${tree(116,70)}`,
+ // 2029 · le Palais Bourbon
+ `<rect x="10" y="96" width="120" height="52" fill="${PAP}" stroke="${INK}" stroke-width="3"/><path d="M30 98 L70 70 L110 98Z" fill="${PAP}" stroke="${INK}" stroke-width="3"/>${[34,46,58,70,82,94,106].map(x=>`<rect x="${x}" y="102" width="5" height="46" fill="${INK}"/>`).join("")}<rect x="4" y="146" width="132" height="8" fill="${STN}" stroke="${INK}" stroke-width="2.5"/>${flagS(68,44)}`,
+ // 2030 · la tour Eiffel
+ `<path d="M70 16 L78 60 L96 150 H82 Q70 118 58 150 H44 L62 60Z" fill="#E5392B" stroke="${INK}" stroke-width="3"/><path d="M60 72 H80 M54 104 H86" stroke="${INK}" stroke-width="3"/><rect x="66" y="6" width="8" height="12" fill="${INK}"/>${tree(20,140)}${tree(120,140)}`,
+ // 2031 · l'Arc de triomphe
+ `<rect x="24" y="66" width="92" height="84" fill="${PAP}" stroke="${INK}" stroke-width="3"/><rect x="18" y="56" width="104" height="14" fill="${STN}" stroke="${INK}" stroke-width="3"/><path d="M52 150 V108 a18 18 0 0 1 36 0 V150Z" fill="#2F5BEA" stroke="${INK}" stroke-width="3"/><rect x="30" y="76" width="80" height="6" fill="${INK}" opacity=".3"/>${flagS(68,62+40)}`];
+function landSVG(ai){ return `<svg class="land" viewBox="0 0 140 160" aria-hidden="true">${LANDS[ai%LANDS.length]}</svg>`; }
+function drawPaths(){
+  document.querySelectorAll(".map .path").forEach(p=>{
+    p.querySelector(".route")&&p.querySelector(".route").remove();
+    const pr=p.getBoundingClientRect(), pts=[...p.querySelectorAll(".node .dot")].map(d=>{ const r=d.getBoundingClientRect(); return [r.left+r.width/2-pr.left, r.top+r.height/2-pr.top]; });
+    if(pts.length<2) return;
+    const nDone=p.querySelectorAll(".node.done").length;
+    const seg=(a,b)=>{ let d=`M${a[0]} ${a[1]}`; for(let i=a[2];i<b;i++){ const p0=pts[Math.max(i-1,0)],p1=pts[i],p2=pts[i+1],p3=pts[Math.min(i+2,pts.length-1)];
+      d+=` C${p1[0]+(p2[0]-p0[0])/6} ${p1[1]+(p2[1]-p0[1])/6} ${p2[0]-(p3[0]-p1[0])/6} ${p2[1]-(p3[1]-p1[1])/6} ${p2[0]} ${p2[1]}`; } return d; };
+    const cut=Math.min(nDone,pts.length-1);
+    const done=cut>0?`<path d="${seg([...pts[0],0],cut)}" stroke="#1C2554" stroke-width="5" fill="none" stroke-linecap="round"/>`:"";
+    const rest=cut<pts.length-1?`<path d="${seg([...pts[cut],cut],pts.length-1)}" stroke="#1C2554" stroke-width="4" stroke-dasharray="2 11" fill="none" stroke-linecap="round"/>`:"";
+    p.insertAdjacentHTML("afterbegin",`<svg class="route" width="${pr.width}" height="${pr.height}" aria-hidden="true">${done}${rest}</svg>`);
+  });
+}
+addEventListener("resize",()=>{ if(S.screen==="map") drawPaths(); });
+
+function afterRender(){ if(S.screen==="map") requestAnimationFrame(drawPaths);
   typers.forEach(clearInterval); typers=[]; rvMount();
   // messages SMS séquentiels
   const seq=[...document.querySelectorAll("[data-seq]")]; const rm0=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches; if(!rm0) seq.forEach((e,i)=>{ e.style.display="none"; setTimeout(()=>{ e.style.display=""; e.classList.add("pop"); if(e.classList.contains("typing")) setTimeout(()=>e.remove(),900); }, 300+i*900); });
