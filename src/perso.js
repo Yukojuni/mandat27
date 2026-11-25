@@ -48,10 +48,11 @@ function persoSVG(id, mood="happy"){
 }
 // bulle de dialogue avec effet machine à écrire (data-type)
 function say(id, text, opt={}){
-  const c=CAST[id];
+  const c=CAST[id], kick=`<span class="kick">${opt.kick||c.nom+" · "+c.role}</span>`;
+  if(opt.noav) return `<div class="say noav ${opt.cls||""}"><div class="bub ${opt.color||""}">${kick}<p data-type>${esc(text)}</p>${opt.extra||""}</div></div>`;
   return `<div class="say ${opt.right?"right":""} ${opt.cls||""}">
-    <div class="av">${perso(id, opt.mood||"happy", "talk", {t:opt.t})}<span class="who">${c.nom}<small>${c.role}</small></span></div>
-    <div class="bub ${opt.color||""}"><p data-type>${esc(text)}</p>${opt.extra||""}</div></div>`;
+    <div class="av">${perso(id, opt.mood||"happy", "talk", {t:opt.t})}</div>
+    <div class="bub ${opt.color||""}">${kick}<p data-type>${esc(text)}</p>${opt.extra||""}</div></div>`;
 }
 
 // Personnage du joueur

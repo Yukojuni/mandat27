@@ -135,48 +135,71 @@ V.q=()=>{ const q=Q[S.qi], steps=stepsOf(q), st=steps[S.step];
 
 const STEP={};
 STEP.intro=q=>{ const f=fmtIntro(S.qi);
- if(f==="jt") return `<div class="deskbg"><article class="une pop"><div class="une-mast"><b>${UNES[S.qi%4]}</b><small>${esc(ANNEES[q.an].an)} · N° ${S.qi+1} · 2,50 €</small></div>
+ if(f==="jt") return `<article class="une pop"><div class="une-mast"><b>${UNES[S.qi%4]}</b><small>${esc(ANNEES[q.an].an)} · N° ${S.qi+1} · 2,50 €</small></div>
    <span class="une-kick">Édition spéciale · ${esc(q.theme)}</span><h2>${esc(q.titre).replace(/ ([?!:;])/g,'\u00a0$1')}</h2>
    <div class="une-photo">${DECOR.facade}<span class="une-sam">${perso("sam","happy","talk")}</span></div><small class="une-leg">Notre envoyé spécial Sam, devant l'Élysée.</small>
-   <div class="une-cols"><div><b class="r">La situation</b><p>${esc(q.hook)}</p><i></i><i></i></div><div><b class="b">Pourquoi ça te concerne</b><p>${esc(q.pourquoi)}</p><i></i></div></div></article></div>`;
+   <div class="une-cols"><div><b class="r">La situation</b><p>${esc(q.hook)}</p><i></i><i></i></div><div><b class="b">Pourquoi ça te concerne</b><p>${esc(q.pourquoi)}</p><i></i></div></div></article>`;
  if(f==="sms") return `<div class="phone pop"><div class="ph-top">${perso("lea","happy")}<div><b>Léa</b><small>en ligne</small></div></div>
    <div class="ph-body"><div class="msg in" data-seq="0">Hé, t'as vu ? ${esc(q.titre)}</div><div class="msg in" data-seq="1">${esc(q.hook)}</div>
    <div class="msg out" data-seq="2">Et moi, ça me concerne comment ?</div><div class="msg in" data-seq="3">${esc(q.pourquoi)}</div><div class="typing" data-seq="4"><i></i><i></i><i></i></div></div></div>`;
  return `<div class="desk pop">${perso("karim","neutral","talk big")}<div class="folder"><div class="tab">DOSSIER ${S.qi+1}/${NQ()}</div><div class="stampu">URGENT</div><h2>${esc(q.titre)}</h2></div></div>
-   ${say("karim",q.hook,{cls:"pop d1"})}<div class="postit pop d2"><b>Post-it de Léa</b><p>${esc(q.pourquoi)}</p></div>`; };
-STEP.quiz=q=>{ const z=QUIZ[q.id], a=S.quiz[q.id];
- return `<div class="qhead pop">${perso("helene","happy","talk")}<h2>${esc(z.q).replace(/ ([?!:;])/g,'\u00a0$1')}</h2></div>
-  <div class="quiz">${z.c.map((c,i)=>`<button class="qa ${a!=null?(i===z.ok?"ok":(i===a?"ko":"dim")):""}" ${a!=null?"disabled":""} onclick="answer(${i},this)">${esc(c)}</button>`).join("")}</div>
-  ${a!=null?`${say("helene",a===z.ok?"Bien vu ! Et voilà les autres chiffres clés.":"Pas tout à fait. Beaucoup de gens se trompent sur celui-là. Voilà les chiffres clés.",{mood:a===z.ok?"happy":"wow",t:a===z.ok?"cheer":"surprise"})}
-   ${q.faits.map((f,i)=>`<div class="card fact pop d${i}"><p>${esc(f[0])}</p>${src(f[1],f[2])}</div>`).join("")}
+   ${say("karim",q.hook,{cls:"pop d1",noav:1})}<div class="postit pop d2"><b>Post-it de Léa</b><p>${esc(q.pourquoi)}</p></div>`; };
+STEP.quiz=q=>{ const z=QUIZ[q.id], a=S.quiz[q.id], ok=a===z.ok;
+ return `<div class="qhead2 pop"><h2>${esc(z.q).replace(/ ([?!:;])/g,'\u00a0$1')}</h2><div class="qboard">${DECOR.board}${perso("helene",a==null?"happy":ok?"happy":"wow","talk",{t:a==null?null:ok?"cheer":"surprise"})}</div></div>
+  <div class="quiz">${z.c.map((c,i)=>`<button class="qa ${a!=null?(i===z.ok?"ok":(i===a?"ko":"dim")):""}" ${a!=null?"disabled":""} onclick="answer(${i},this)">${esc(c)}${a!=null&&i===z.ok?'<span class="juste">Juste&nbsp;!</span>':""}</button>`).join("")}</div>
+  ${a!=null?`<div class="card qexp pop"><span class="kick">Hélène · économiste</span><b class="qv">${ok?"Bien vu !":"Pas tout à fait : beaucoup de gens se trompent sur celui-là."}${ok?' <span class="xpw">+15 XP</span>':""}</b>
+   ${q.faits.map(f=>`<div class="qf"><p>${esc(f[0])}</p>${src(f[1],f[2])}</div>`).join("")}</div>
    <div class="nav"><button class="btn ghost" onclick="step(-1)">Retour</button><button class="btn" onclick="step(1)">Suivant</button></div>`:""}`; };
-STEP.faits=q=>`${say("helene","Avant de décider, les chiffres. Touche les cartes pour les retourner.")}
-  <div class="flips">${q.faits.map((f,i)=>`<div class="flip pop d${i}" onclick="if(!this.classList.contains('on')){this.classList.add('on');addXP(5,this)}"><div class="fi"><div class="ff"><span>Fait ${i+1}</span><b>?</b></div><div class="fb"><p>${esc(f[0])}</p>${src(f[1],f[2])}</div></div></div>`).join("")}</div>`;
-STEP.debat=q=>`<div class="vs pop"><div class="side l">${perso("ines","happy","talk big")}<span class="pl g">POUR</span></div><div class="bolt">VS</div><div class="side r">${perso("marc","neutral","talk big")}<span class="pl r">CONTRE</span></div></div>
-  ${say("ines",q.pour[0],{color:"green",extra:`<small class="att">Position défendue par : ${esc(q.pour[1])}</small>`})}
-  ${say("marc",q.contre[0],{right:1,color:"red",extra:`<small class="att">Position défendue par : ${esc(q.contre[1])}</small>`})}`;
-STEP.ailleurs=q=>`<div class="yukihead pop">${perso("yuki","happy","talk big")}${ICON.globe}</div>
-  ${say("yuki","J'ai regardé ce que d'autres pays ont fait, et surtout ce que ça a donné. Aucun modèle n'est parfait, mais ça aide à choisir.")}
+function bigNum(t){ const m=t.match(/(\d[\d\s ]*(?:[,.]\d+)?)\s*(%|milliards?|millions?|€|euros?|ans?|points?|fois|heures?|jours?|km|tonnes?|°C)?/i);
+  if(!m) return null; let u=(m[2]||"").toLowerCase(); u=u.startsWith("milliard")?" Md":u.startsWith("million")?" M":u.startsWith("euro")||u==="€"?" €":u==="%"?" %":u?" "+u:"";
+  return (m[1].trim()+u).replace(/\s+/g," ").toUpperCase(); }
+STEP.faits=q=>`<h2 class="ftitle pop">Ce qu'il faut savoir</h2>
+  <div class="stats">${q.faits.map((f,i)=>{ const n=bigNum(f[0]); return `<div class="stat pop d${i}"><b>${n||"N°"+(i+1)}</b><div><p>${esc(f[0])}</p>${src(f[1],f[2])}</div></div>`; }).join("")}</div>
+  ${say("helene","Garde ces chiffres en tête : chaque option du vote en tire un.",{cls:"pop d3"})}`;
+STEP.debat=q=>`<div class="vs pop"><div class="side l">${perso("ines","happy","talk big")}<span class="pl g">Pour · Inès</span></div><div class="bolt">VS</div><div class="side r">${perso("marc","neutral","talk big")}<span class="pl r">Contre · Marc</span></div></div>
+  ${say("ines",q.pour[0],{noav:1,kick:"Inès · pour",extra:`<small class="att">Position défendue par : ${esc(q.pour[1])}</small>`})}
+  ${say("marc",q.contre[0],{noav:1,kick:"Marc · contre",extra:`<small class="att">Position défendue par : ${esc(q.contre[1])}</small>`})}`;
+const FLAGS={
+ "Allemagne":'<rect width="34" height="8" fill="#111"/><rect y="8" width="34" height="7" fill="#E5392B"/><rect y="15" width="34" height="7" fill="#F5C431"/>',
+ "Suède":'<rect width="34" height="22" fill="#2E6BC6"/><rect x="10" width="6" height="22" fill="#F5C431"/><rect y="8" width="34" height="6" fill="#F5C431"/>',
+ "Finlande":'<rect width="34" height="22" fill="#FBF6EA"/><rect x="10" width="6" height="22" fill="#2F5BEA"/><rect y="8" width="34" height="6" fill="#2F5BEA"/>',
+ "Norvège":'<rect width="34" height="22" fill="#E5392B"/><rect x="8" width="10" height="22" fill="#FBF6EA"/><rect y="6" width="34" height="10" fill="#FBF6EA"/><rect x="11" width="4" height="22" fill="#1C2554"/><rect y="9" width="34" height="4" fill="#1C2554"/>',
+ "Danemark":'<rect width="34" height="22" fill="#E5392B"/><rect x="10" width="5" height="22" fill="#FBF6EA"/><rect y="8.5" width="34" height="5" fill="#FBF6EA"/>',
+ "Islande":'<rect width="34" height="22" fill="#2F5BEA"/><rect x="8" width="10" height="22" fill="#FBF6EA"/><rect y="6" width="34" height="10" fill="#FBF6EA"/><rect x="11" width="4" height="22" fill="#E5392B"/><rect y="9" width="34" height="4" fill="#E5392B"/>',
+ "Royaume-Uni":'<rect width="34" height="22" fill="#1C2554"/><path d="M0 0L34 22M34 0L0 22" stroke="#FBF6EA" stroke-width="4"/><rect x="13" width="8" height="22" fill="#FBF6EA"/><rect y="7" width="34" height="8" fill="#FBF6EA"/><rect x="15" width="4" height="22" fill="#E5392B"/><rect y="9" width="34" height="4" fill="#E5392B"/>',
+ "Espagne":'<rect width="34" height="22" fill="#E5392B"/><rect y="5.5" width="34" height="11" fill="#F5C431"/>',
+ "Italie":'<rect width="12" height="22" fill="#2E9B5E"/><rect x="11" width="12" height="22" fill="#FBF6EA"/><rect x="22" width="12" height="22" fill="#E5392B"/>',
+ "Belgique":'<rect width="12" height="22" fill="#111"/><rect x="11" width="12" height="22" fill="#F5C431"/><rect x="22" width="12" height="22" fill="#E5392B"/>',
+ "Canada":'<rect width="34" height="22" fill="#FBF6EA"/><rect width="8" height="22" fill="#E5392B"/><rect x="26" width="8" height="22" fill="#E5392B"/><path d="M17 5 L20 11 L17 9.5 L14 11Z M17 9 V17" stroke="#E5392B" stroke-width="2" fill="#E5392B"/>',
+ "États-Unis":'<rect width="34" height="22" fill="#FBF6EA"/>'+[0,1,2,3,4,5].map(i=>`<rect y="${i*3.7}" width="34" height="1.9" fill="#E5392B"/>`).join("")+'<rect width="15" height="11" fill="#1C2554"/>',
+ "Pays-Bas":'<rect width="34" height="8" fill="#E5392B"/><rect y="7" width="34" height="8" fill="#FBF6EA"/><rect y="15" width="34" height="7" fill="#2F5BEA"/>',
+ "Pologne":'<rect width="34" height="11" fill="#FBF6EA"/><rect y="11" width="34" height="11" fill="#E5392B"/>',
+ "Portugal":'<rect width="34" height="22" fill="#E5392B"/><rect width="13" height="22" fill="#2E9B5E"/><circle cx="13" cy="11" r="4.5" fill="#F5C431"/>',
+ "Suisse":'<rect width="34" height="22" fill="#E5392B"/><rect x="14.5" y="4" width="5" height="14" fill="#FBF6EA"/><rect x="10" y="8.5" width="14" height="5" fill="#FBF6EA"/>'};
+const flag=n=>n.split(/ et /).filter(x=>FLAGS[x]).map(x=>`<svg class="flag" viewBox="0 0 34 22" aria-hidden="true">${FLAGS[x]}</svg>`).join("");
+STEP.ailleurs=q=>`<div class="ahead pop"><h2>Ce qu'ils ont fait</h2>${perso("yuki","happy","talk")}</div>
+  <p class="alead">Yuki, notre diplomate, a regardé ce que d'autres pays ont tenté, et surtout ce que ça a donné. Aucun modèle n'est parfait.</p>
   <div class="passport">${q.ailleurs.map((a,i)=>{ const r=(AILLEURS[q.id]||[])[i]; const v=r&&VERDICTS[r[1]];
-    return `<div class="stampc" style="--d:${0.5+i*0.45}s;--r:${[-1.5,1.2,-1][i]}deg"><b>${esc(a[0])}</b>
-     <p class="did"><span class="pk">Ce qu'ils ont fait</span>${esc(a[1])}</p>
-     ${r?`<p class="res"><span class="vd" style="color:${v[1]};background:${v[2]}">${v[0]}</span>${esc(r[0])}</p>${src(r[2],r[3])}`:""}</div>`; }).join("")}</div>`;
+    return `<div class="stampc" style="--d:${0.3+i*0.3}s"><div class="sh">${flag(a[0])}<b>${esc(a[0])}</b>${r?`<span class="vd">${v[0].replace(/^Bilan\s*/i,"")}</span>`:""}</div>
+     <p class="did">${esc(a[1])}</p>
+     ${r?`<p class="res"><b>Le bilan :</b> ${esc(r[0])}</p>${src(r[2],r[3])}`:""}</div>`; }).join("")}</div>`;
 STEP.vote=q=>{ const f=fmtVote(S.qi), O=["A","B","C"];
  const det=k=>{ const o=q.opts[k]; return `<p><span class="pl g">Point fort</span>${esc(o.fort)}</p><p><span class="pl r">Point faible</span>${esc(o.faible)}</p><p class="rep"><span class="pl b">Ses défenseurs répondent</span>${esc(o.rep)}</p>`; };
  const extra=`<label class="imp"><input type="checkbox" class="vh" ${S.imp[q.id]?"checked":""} onchange="S.imp['${q.id}']=this.checked;save()"><svg class="heart" viewBox="0 0 32 30" aria-hidden="true"><path d="M16 28 C6 20 2 15 2 9.5 A7 7 0 0 1 16 6 A7 7 0 0 1 30 9.5 C30 15 26 20 16 28Z"/></svg><span>Ce sujet me tient à cœur<small>il compte double dans le verdict</small></span></label><button class="link" onclick="vote('X')">Je ne sais pas, je passe</button>`;
- const head=`<div class="vhemi pop">${DECOR.hemiback}${hemicycle(0)}</div><div class="qremind pop"><span class="qr-l">Ta décision</span><b>${esc(q.titre).replace(/ ([?!:;])/g,'\u00a0$1')}</b><p>${esc(q.hook).replace(/ ([?!:;])/g,'\u00a0$1')}</p></div><div class="vfmt pop">${VOTE_NOM[f]}</div>`;
- if(f==="cartes") return `${head}${say("karim","Trois options sur la table. Touche-les pour voir leurs forces et faiblesses.")}
+ const head=`<div class="vhemi pop">${DECOR.hemiback}${hemicycle(0)}${f!=="ministres"?`<span class="vkarim">${perso("karim","neutral")}</span>`:""}</div><div class="vtitle pop"><h2>${esc(q.titre).replace(/ ([?!:;])/g,'\u00a0$1')}</h2><p>${esc(q.hook).replace(/ ([?!:;])/g,'\u00a0$1')}</p></div>`;
+ const hint=t=>`<p class="vhint"><span class="vfmt">${VOTE_NOM[f]}</span>${t}</p>`;
+ if(f==="cartes") return `${head}${hint("Touche une option pour voir ses forces et ses faiblesses.")}
    ${O.map((k,i)=>`<div class="opt pop d${i}" id="o${k}" onclick="peek('${k}')"><div class="oh"><span class="ol">${k}</span><b>${esc(q.opts[k].t)}</b></div><div class="od">${det(k)}<button class="btn" onclick="event.stopPropagation();vote('${k}')">Signer la loi</button></div></div>`).join("")}${extra}`;
  if(f==="ministres"){ const mins=["helene","karim","yuki"];
-   return `${head}${say("karim","Conseil des ministres. Chacun défend une option. Touche un ministre pour l'écouter, puis suis celui qui te convainc.")}
+   return `${head}${hint("Chaque ministre défend une option. Écoute-les, puis suis celui qui te convainc.")}
    <div class="table">${O.map((k,i)=>`<button class="min ${S.pick===k?"sel":""}" onclick="pickMin('${k}')">${perso(mins[i],S.pick===k?"happy":"neutral","talk")}<span class="ol">${k}</span></button>`).join("")}</div>
-   <div id="minsay">${S.pick?`${say(mins[O.indexOf(S.pick)],q.opts[S.pick].t,{extra:`<div class="dt">${det(S.pick)}</div>`})}<button class="btn" onclick="vote('${S.pick}')">Je suis ce conseil</button>`:`<p class="hint center">Personne n'a encore parlé.</p>`}</div>${extra}`; }
- if(f==="curseur") return `${head}${say("karim","Fais glisser le curseur entre les trois options : A à gauche, C à droite, le compromis au milieu. Le dossier change en direct.")}
+   <div id="minsay">${S.pick?`${say(mins[O.indexOf(S.pick)],q.opts[S.pick].t,{noav:1,extra:`<div class="dt">${det(S.pick)}</div>`})}<button class="btn" onclick="vote('${S.pick}')">Je suis ce conseil</button>`:`<p class="hint center">Personne n'a encore parlé.</p>`}</div>${extra}`; }
+ if(f==="curseur") return `${head}${hint("Fais glisser le curseur : A à gauche, C à droite, le compromis au milieu.")}
    <div class="slider pop"><div class="sl-lab"><span>A</span><span>B · compromis</span><span>C</span></div>
     <input type="range" min="0" max="2" step="1" value="${O.indexOf(S.pick||"B")}" oninput="slide(this.value)" aria-label="Position">
     <div id="sldet" class="card"><b>${esc(q.opts[S.pick||"B"].t)}</b>${det(S.pick||"B")}</div>
     <button class="btn" onclick="vote(S.pick||'B')">Je valide cette position</button></div>${extra}`;
- return `${head}${say("karim","Trois bulletins, une seule urne. Prends un bulletin pour le lire, puis glisse-le dans l'urne.")}
+ return `${head}${hint("Prends un bulletin pour le lire, puis glisse-le dans l'urne.")}
    <div class="ballots">${O.map((k,i)=>`<button class="bal ${S.pick===k?"up":""}" style="--r:${[-5,0,5][i]}deg" onclick="pickBal('${k}')"><span class="ol">${k}</span><b>${esc(q.opts[k].t)}</b></button>`).join("")}</div>
    <div class="mini-urne">${ICON.urne}</div>
    ${S.pick?`<div class="card pop">${det(S.pick)}<button class="btn" onclick="vote('${S.pick}')">Glisser dans l'urne</button></div>`:""}${extra}`; };
@@ -207,7 +230,7 @@ V.result=()=>{ const q=Q[S.qi], o=S.ch[q.id];
 
 V.bilan=()=>{ const an=Q[S.qi].an, y=ANNEES[an], s=yearStats(an), ev=EVENTS.find(e=>e.an===an&&e.si(s));
  return `<div class="screen bilan">${topbar()}<div class="confetti">${[...Array(24)].map((_,i)=>`<i style="--i:${i}"></i>`).join("")}</div>
-  <div class="cal pop"><span class="cal-d">31 décembre</span><b>${y.an}</b></div><h2 class="pop">Bilan : ${esc(y.titre)}</h2>
+  <div class="calwrap">${DECOR.yrays}<div class="cal pop"><span class="cal-d">31 décembre</span><b>${y.an}</b></div></div><h2 class="pop">Bilan : ${esc(y.titre)}</h2>
   <div class="grid3 pop d1"><div class="kpi"><small>Budget</small><b class="big">${s.b>0?"+":""}${s.b}</b></div><div class="kpi"><small>Climat</small><b class="big">${s.c>0?"+":""}${s.c}</b></div><div class="kpi"><small>Soutiens</small><b class="big">${Math.round(s.soutien*100)} %</b></div></div>
   ${ev?`<span class="tag red pop d2">Fait réel</span><h2 class="evt pop d2">${esc(ev.titre)}</h2>
   ${say("sam",ev.txt,{extra:src(ev.src[0],ev.src[1]),cls:"pop d3"})}`:""}
@@ -216,12 +239,10 @@ V.bilan=()=>{ const an=Q[S.qi].an, y=ANNEES[an], s=yearStats(an), ev=EVENTS.find
 V.verdict=()=>{ const m=match(), n=totals().n;
  if(!n) return `<div class="screen">${topbar()}<h2>Pas encore de choix</h2><button class="btn" onclick="go('map')">Retour à la carte</button></div>`;
  return `<div class="screen verdict"><div class="confetti">${[...Array(24)].map((_,i)=>`<i style="--i:${i}"></i>`).join("")}</div>
-  <div class="vhead">${DECOR.redrays}${DECOR.city}<div class="tag">2 mai 2032 · 20 h</div><h2 class="pop">Ton mandat ressemble à…</h2></div>
+  <div class="vhead">${DECOR.redrays}${DECOR.city}<div class="tag">2 mai 2032 · 20 h</div><h2 class="pop">Ton mandat ressemble à…</h2>
+   <div class="podium">${[1,0,2].filter(i=>m[i]).map(i=>{ const r=m[i]; return `<div class="affiche ${i===0?"first":""}" style="--d:${[0.2,0.35,0.5][i]}s"><div class="in"><div class="back"><div class="rk">${i+1}</div><div class="nm">${esc(CANDS[r.k].nom)}</div><div class="pt">${esc(CANDS[r.k].parti)}</div><div class="pc">${r.pct} %</div><small>${r.agree}/${r.cnt} choix identiques</small><button class="link" onclick="detail('${r.k}')">Détail et sources</button></div></div></div>`; }).join("")}</div></div>
   ${say("karim",`Mode ${MODES[S.mode].nom.toLowerCase()}. Sur tes ${n} décisions, voici les candidats de 2027 qui auraient fait les choix les plus proches. Rang final : ${rang().nom}.`)}
-  <div class="panneau">${m.map((r,i)=>`<div class="affiche" style="--d:${i*0.25+0.6}s"><div class="in"><div class="front"><b>?</b></div>
-   <div class="back"><div class="rk">${i+1}</div><div class="nm">${esc(CANDS[r.k].nom)}</div><div class="pt">${esc(CANDS[r.k].parti)}</div>
-   <div class="meter"><i style="width:${r.pct}%"></i></div><div class="pc">${r.pct} %</div><small>${r.agree}/${r.cnt} choix identiques</small>
-   <button class="link" onclick="detail('${r.k}')">Détail et sources</button></div></div></div>`).join("")}</div>
+  <div class="others">${m.slice(3).map((r,i)=>`<div class="vrow"><span class="rk">${i+4}</span><div class="vn"><b>${esc(CANDS[r.k].nom)}</b><small>${esc(CANDS[r.k].parti)} · ${r.agree}/${r.cnt} choix identiques</small></div><span class="pc">${r.pct} %</span><button class="link" onclick="detail('${r.k}')" aria-label="Détail pour ${esc(CANDS[r.k].nom)}">Détail</button></div>`).join("")}</div>
   ${say("lea","Ce n'est ni un sondage ni une consigne de vote : ça compare tes choix aux positions publiques au 23 novembre 2026. Va lire leurs programmes !",{right:1,color:"red"})}
   ${S.mode!=="complet"?`<div class="card deeper"><b>${S.mode==="rapide"?"Avec 5 décisions, ce résultat reste très indicatif.":"Envie d'un portrait plus précis ?"}</b><p>Tes réponses sont gardées : il te reste seulement les nouvelles décisions.</p>
    ${S.mode==="rapide"?`<button class="btn" onclick="upgrade('trimestriel')">Passer en Trimestriel (+10 décisions)</button>`:""}<button class="btn ghost" onclick="upgrade('complet')">Passer en Complet (+${30-NQ()} décisions)</button></div>`:""}
