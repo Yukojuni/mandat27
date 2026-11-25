@@ -78,7 +78,7 @@ V.home=()=>{ const started=Object.keys(S.ch).length;
    <h1 class="pop d1">MANDAT<br><span>27</span></h1>
    <p class="lead pop d2">5 ans à l'Élysée.<br>Jusqu'à 30 décisions réelles de la campagne 2027.</p>
    <div class="pfac">${DECOR.facade}</div>
-   <div class="cast pop d3">${["karim","yuki","lea","helene","sam"].map((k,i)=>`<div class="cm${k==="lea"?" mid":""}" style="--i:${i}">${perso(k,"happy","",{t:"wave"})}<b>${CAST[k].nom}</b><small>${CAST[k].role}</small></div>`).join("")}</div></div>
+   <div class="cast pop d3">${["karim","yuki","lea","helene","sam"].map((k,i)=>`<div class="cm${k==="lea"?" mid":""}" style="--i:${i}">${perso(k,"happy","full",{t:"wave"})}<b>${CAST[k].fn}</b><small>${CAST[k].nom}</small></div>`).join("")}</div></div>
   <p class="intro pop d3">Ton équipe t'aide à comprendre. Toi, tu tranches. À la fin, découvre quels candidats ont fait les mêmes choix que toi.</p>
   <div class="stack pop d4">
    <button class="btn big" onclick="${started&&S.moi?"go('map')":"go('mode')"}">${started?"Reprendre mon mandat":"Commencer"}</button>
@@ -107,7 +107,7 @@ V.avatar=()=>{ const m=S.moi||{g:null,skin:1,hair:0,st:"short"}; if(!S.moi) S.mo
   <p class="fine">Ton apparence ne change rien au résultat.</p></div>`; };
 V.elect=()=>`<div class="screen elect">
   <div class="rv rvscene" data-ab="ElectionNight" onclick="skipScene(this)" aria-label="Soirée électorale : c'est toi !"><div class="pfb">${DECOR.redrays}
-  <div class="crowd">${["lea","sam","ines","marc","yuki","helene"].map((k,i)=>`<div class="fan" style="--i:${i}">${perso(k,"wow","",{loop:"cheering"})}</div>`).join("")}</div>
+  <div class="crowd">${["lea","sam","ines","marc","yuki","helene"].map((k,i)=>`<div class="fan" style="--i:${i}">${perso(k,"wow","full",{loop:"cheering"})}</div>`).join("")}</div>
   <div class="tv"><div class="tvin"><div class="bandeau">ÉDITION SPÉCIALE</div><div class="count"><span>20:00</span></div><div class="tvme">${perso("moi","happy")}</div><div class="reveal">C'EST TOI !</div></div></div>
   <div class="confetti">${[...Array(24)].map((_,i)=>`<i style="--i:${i}"></i>`).join("")}</div></div></div>
   <div class="esheet">
@@ -118,10 +118,10 @@ V.elect=()=>`<div class="screen elect">
 V.map=()=>{ const nxt=Q.findIndex(q=>!S.ch[q.id]);
  return `<div class="screen map">${topbar()}<button class="modechip" onclick="go('mode')"><span>Rythme <b>${MODES[S.mode].nom}</b> · ${NQ()} décisions</span><u>Changer</u></button>
   ${ANNEES.map((y,ai)=>{ const qs=Q.map((q,i)=>({q,i})).filter(o=>o.q.an===ai);
-   return `<section class="year y${ai}">${landSVG(ai)}<div class="yh"><b>${y.an}</b><div><h3>${y.titre}</h3><p>${y.sous}</p></div></div>
+   return `<section class="year y${ai}${qs.length<3?" solo":""}">${landSVG(ai)}<div class="yh"><b>${y.an}</b><div><h3>${y.titre}</h3><p>${y.sous}</p></div></div>
    <div class="path">${qs.map(({q,i},j)=>{ const st=S.ch[q.id]?"done":(i===nxt?"next":(i<nxt||nxt<0?"open":"lock"));
      return `<button class="node ${st}" style="--x:${[0,46,72,46,0,-46][j]}px" ${st==="lock"?"disabled":""} onclick="openQ(${i})">
-      <span class="dot">${st==="done"?"✓":j+1}<span class="rv rvnode" data-ab="MapNode" data-state="${{lock:"locked",open:"open",next:"next",done:"done"}[st]}" data-theme="${themeKey(q.theme)}"${S.justDone===q.id?' data-t="complete"':""} aria-hidden="true"></span></span><span class="nt">${esc(q.theme)}</span>${st==="next"?`<span class="here"><span class="rv rvmark" data-ab="PlayerMarker" data-c="${S.moi?"moi":"lea"}"${S.justDone?' data-t="advance"':""} aria-hidden="true"><span class="pfb">${persoSVG(S.moi?"moi":"lea","happy")}</span></span></span>`:""}</button>`; }).join("")}</div></section>`; }).join("")}
+      <span class="dot">${themeIcon(q.theme)}${st==="done"?'<i class="ck">✓</i>':""}<span class="rv rvnode" data-ab="MapNode" data-state="${{lock:"locked",open:"open",next:"next",done:"done"}[st]}" data-theme="${themeKey(q.theme)}"${S.justDone===q.id?' data-t="complete"':""} aria-hidden="true"></span></span><span class="nt">${esc(q.theme)}</span>${st==="next"?`<span class="here"><span class="rv rvmark" data-ab="PlayerMarker" data-c="${S.moi?"moi":"lea"}"${S.justDone?' data-t="advance"':""} aria-hidden="true"><span class="pfb">${persoSVG(S.moi?"moi":"lea","happy")}</span></span></span>`:""}</button>`; }).join("")}</div></section>`; }).join("")}
   <div class="mapfoot">${nxt>=0?say("karim", nxt===0?`Voilà ta feuille de route, ${TITRE()}. On commence par les retraites : touche la première bulle.`:`Prochain dossier : ${Q[nxt].theme.toLowerCase()}. Format du vote : ${VOTE_NOM[fmtVote(nxt)].toLowerCase()}.`):say("karim","Mandat terminé. Les Français attendent ton bilan.",{mood:"wow"})}</div>
   ${nxt<0?`<button class="btn big gold" onclick="go('verdict')">Voir le verdict</button><button class="btn ghost" style="margin-top:12px" onclick="go('parcours')">Revoir mon parcours</button>`:""}</div>`; };
 
@@ -145,7 +145,7 @@ STEP.intro=q=>{ const f=fmtIntro(S.qi);
  return `<div class="desk pop">${perso("karim","neutral","talk big")}<div class="folder"><div class="tab">DOSSIER ${S.qi+1}/${NQ()}</div><div class="stampu">URGENT</div><h2>${esc(q.titre)}</h2></div></div>
    ${say("karim",q.hook,{cls:"pop d1",noav:1})}<div class="postit pop d2"><b>Post-it de Léa</b><p>${esc(q.pourquoi)}</p></div>`; };
 STEP.quiz=q=>{ const z=QUIZ[q.id], a=S.quiz[q.id], ok=a===z.ok;
- return `<div class="qhead2 pop"><h2>${esc(z.q).replace(/ ([?!:;])/g,'\u00a0$1')}</h2><div class="qboard">${DECOR.board}${perso("helene",a==null?"happy":ok?"happy":"wow","talk",{t:a==null?null:ok?"cheer":"surprise"})}</div></div>
+ return `<div class="qhead2 pop"><h2>${esc(z.q).replace(/ ([?!:;])/g,'\u00a0$1')}</h2><div class="qboard">${DECOR.board}${perso("helene",a==null?"happy":ok?"happy":"wow","talk full",{t:a==null?null:ok?"cheer":"surprise"})}</div></div>
   <div class="quiz">${z.c.map((c,i)=>`<button class="qa ${a!=null?(i===z.ok?"ok":(i===a?"ko":"dim")):""}" ${a!=null?"disabled":""} onclick="answer(${i},this)">${esc(c)}${a!=null&&i===z.ok?'<span class="juste">Juste&nbsp;!</span>':""}</button>`).join("")}</div>
   ${a!=null?`<div class="card qexp pop"><span class="kick">Hélène · économiste</span><b class="qv">${ok?"Bien vu !":"Pas tout à fait : beaucoup de gens se trompent sur celui-là."}${ok?' <span class="xpw">+15 XP</span>':""}</b>
    ${q.faits.map(f=>`<div class="qf"><p>${esc(f[0])}</p>${src(f[1],f[2])}</div>`).join("")}</div>
@@ -177,7 +177,7 @@ const FLAGS={
  "Portugal":'<rect width="34" height="22" fill="#E5392B"/><rect width="13" height="22" fill="#2E9B5E"/><circle cx="13" cy="11" r="4.5" fill="#F5C431"/>',
  "Suisse":'<rect width="34" height="22" fill="#E5392B"/><rect x="14.5" y="4" width="5" height="14" fill="#FBF6EA"/><rect x="10" y="8.5" width="14" height="5" fill="#FBF6EA"/>'};
 const flag=n=>n.split(/ et /).filter(x=>FLAGS[x]).map(x=>`<svg class="flag" viewBox="0 0 34 22" aria-hidden="true">${FLAGS[x]}</svg>`).join("");
-STEP.ailleurs=q=>`<div class="ahead pop"><h2>Ce qu'ils ont fait</h2>${perso("yuki","happy","talk")}</div>
+STEP.ailleurs=q=>`<div class="ahead pop"><h2>Ce qu'ils ont fait</h2>${perso("yuki","happy","talk full")}</div>
   <p class="alead">Yuki, notre diplomate, a regardé ce que d'autres pays ont tenté, et surtout ce que ça a donné. Aucun modèle n'est parfait.</p>
   <div class="passport">${q.ailleurs.map((a,i)=>{ const r=(AILLEURS[q.id]||[])[i]; const v=r&&VERDICTS[r[1]];
     return `<div class="stampc" style="--d:${0.3+i*0.3}s"><div class="sh">${flag(a[0])}<b>${esc(a[0])}</b>${r?`<span class="vd">${v[0].replace(/^Bilan\s*/i,"")}</span>`:""}</div>
@@ -186,7 +186,7 @@ STEP.ailleurs=q=>`<div class="ahead pop"><h2>Ce qu'ils ont fait</h2>${perso("yuk
 STEP.vote=q=>{ const f=fmtVote(S.qi), O=["A","B","C"];
  const det=k=>{ const o=q.opts[k]; return `<p><span class="pl g">Point fort</span>${esc(o.fort)}</p><p><span class="pl r">Point faible</span>${esc(o.faible)}</p><p class="rep"><span class="pl b">Ses défenseurs répondent</span>${esc(o.rep)}</p>`; };
  const extra=`<label class="imp"><input type="checkbox" class="vh" ${S.imp[q.id]?"checked":""} onchange="S.imp['${q.id}']=this.checked;save()"><svg class="heart" viewBox="0 0 32 30" aria-hidden="true"><path d="M16 28 C6 20 2 15 2 9.5 A7 7 0 0 1 16 6 A7 7 0 0 1 30 9.5 C30 15 26 20 16 28Z"/></svg><span>Ce sujet me tient à cœur<small>il compte double dans le verdict</small></span></label><button class="link" onclick="vote('X')">Je ne sais pas, je passe</button>`;
- const head=`<div class="vhemi pop">${DECOR.hemiback}${hemicycle(0)}${f!=="ministres"?`<span class="vkarim">${perso("karim","neutral")}</span>`:""}</div><div class="vtitle pop"><h2>${esc(q.titre).replace(/ ([?!:;])/g,'\u00a0$1')}</h2><p>${esc(q.hook).replace(/ ([?!:;])/g,'\u00a0$1')}</p></div>`;
+ const head=`<div class="vhemi pop">${DECOR.hemiback}${hemicycle(0)}${f!=="ministres"?`<span class="vkarim">${perso("karim","happy","full")}</span>`:""}</div><div class="vtitle pop"><h2>${esc(q.titre).replace(/ ([?!:;])/g,'\u00a0$1')}</h2><p>${esc(q.hook).replace(/ ([?!:;])/g,'\u00a0$1')}</p></div>`;
  const hint=t=>`<p class="vhint"><span class="vfmt">${VOTE_NOM[f]}</span>${t}</p>`;
  if(f==="cartes") return `${head}${hint("Touche une option pour voir ses forces et ses faiblesses.")}
    ${O.map((k,i)=>`<div class="opt pop d${i}" id="o${k}" onclick="peek('${k}')"><div class="oh"><span class="ol">${k}</span><b>${esc(q.opts[k].t)}</b></div><div class="od">${det(k)}<button class="btn" onclick="event.stopPropagation();vote('${k}')">Signer la loi</button></div></div>`).join("")}${extra}`;
@@ -315,6 +315,31 @@ function reset(){ S=fresh(); setMode("complet"); if(RV.ok) rvPrewarm(); try{loca
 function burst(){ const c=document.createElement("div"); c.className="confetti fixed"; c.innerHTML=[...Array(24)].map((_,i)=>`<i style="--i:${i}"></i>`).join(""); document.body.appendChild(c); setTimeout(()=>c.remove(),2600); }
 
 let typers=[]; let typed=new Set(), typedKey="";
+// ───────── pictos de thème (trait encre, 24×24)
+const TI={
+ retraites:'<path d="M7 3h10M7 21h10M8 3c0 5 8 6 8 9s-8 4-8 9M16 3c0 5-8 6-8 9s8 4 8 9"/>',
+ salaires:'<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 9v6M18 9v6"/>',
+ impots:'<path d="M17 6.5A6.5 6.5 0 1 0 17 17.5M4 10.5h9M4 13.5h9"/>',
+ entreprises:'<path d="M3 21V11l5 3V11l5 3V5h4v16Z"/><path d="M7 18h2M12 18h2"/>',
+ immigration:'<rect x="5" y="3" width="14" height="18" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M9 16h6"/>',
+ international:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',
+ social:'<circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M2 20c0-4 3-6 6-6s6 2 6 6M12 20c0-4 2-6 4-6s6 2 6 6"/>',
+ sante:'<path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6Z"/>',
+ energie:'<path d="M13 2 4 14h7l-1 8 9-12h-7Z"/>',
+ justice:'<path d="M12 3v18M7 21h10M5 7h14M5 7l-3 7a3 3 0 0 0 6 0ZM19 7l-3 7a3 3 0 0 0 6 0Z"/>',
+ ecole:'<path d="M2 9l10-5 10 5-10 5Z"/><path d="M6 11v5c3 3 9 3 12 0v-5"/>',
+ nationalite:'<path d="M5 21V3"/><path d="M5 4h14l-3 4 3 4H5"/>',
+ societe:'<path d="M12 21s-8-5-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6-8 11-8 11Z"/>',
+ climat:'<path d="M5 19C5 9 11 4 20 4c0 9-5 15-15 15Z"/><path d="M5 19 13 11"/>',
+ agriculture:'<path d="M12 22V8M12 12c-3 0-5-2-5-5 3 0 5 2 5 5ZM12 12c3 0 5-2 5-5-3 0-5 2-5 5ZM12 17c-3 0-5-2-5-5 3 0 5 2 5 5ZM12 17c3 0 5-2 5-5-3 0-5 2-5 5Z"/>',
+ industrie:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>',
+ europe:[0,1,2,3,4,5,6,7,8,9,10,11].map(i=>`<circle cx="${(12+8*Math.cos(i*Math.PI/6)).toFixed(1)}" cy="${(12+8*Math.sin(i*Math.PI/6)).toFixed(1)}" r="1.5" fill="currentColor" stroke="none"/>`).join(""),
+ defense:'<path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5Z"/>',
+ travail:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V4h6v3M3 13h18"/>',
+ securite:'<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/>',
+ institutions:'<path d="M3 21h18M4 10h16M12 3 3 8h18ZM6 10v8M10 10v8M14 10v8M18 10v8"/>'};
+function themeIcon(t){ const k=themeKey(t); return `<svg class="ti" viewBox="0 0 24 24" aria-hidden="true">${TI[k]||TI.institutions}</svg>`; }
+
 // ───────── carte : un monument de Paris par année, chemin qui relie vraiment les étapes
 const INK="#1C2554", PAP="#FBF6EA", STN="#D9CDB4";
 const tree=(x,y,r=13)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#3E9B5C" stroke="${INK}" stroke-width="2.5"/><circle cx="${x-4}" cy="${y-4}" r="${r*.4}" fill="#5CB877"/><rect x="${x-2}" y="${y+r-2}" width="4" height="9" fill="${INK}"/>`;

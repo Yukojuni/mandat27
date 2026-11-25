@@ -9,6 +9,7 @@ const CAST = {
  marc:  {nom:"Marc",  role:"chercheur",              skin:"#8D5A3B", sh:"#7A4B30", hair:"#2B1A12", st:"short", suit:"#E5392B", suit2:"#C22D21", glasses:1}
 };
 Object.keys(CAST).forEach(k=>CAST[k].kind=k);
+Object.assign(CAST.lea,{fn:"Citoyenne"}); Object.assign(CAST.karim,{fn:"Chef de cabinet"}); Object.assign(CAST.helene,{fn:"Économiste"}); Object.assign(CAST.sam,{fn:"Journaliste"}); Object.assign(CAST.yuki,{fn:"Diplomate"});
 function mouth(m){
   if(m==="sad") return `<path d="M42 64 Q50 58 58 64" stroke="#13234B" stroke-width="3.2" fill="none" stroke-linecap="round"/>`;
   if(m==="wow") return `<ellipse cx="50" cy="63" rx="5" ry="6" fill="#13234B"/>`;
@@ -24,10 +25,10 @@ function hair(c){
   return `<path d="M14 80 Q10 10 50 10 Q90 10 86 80 L78 80 Q80 28 50 24 Q20 28 22 80Z" fill="${h}"/>`;
 }
 function perso(id, mood="happy", cls="", o={}){
-  return `<span class="perso rv ${cls}" data-c="${id}" data-m="${mood}"${o.t?` data-t="${o.t}"`:""}${o.loop?` data-loop="${o.loop}"`:""} role="img" aria-label="${CAST[id].nom}">${persoSVG(id,mood)}</span>`;
+  return `<span class="perso rv ${cls}" data-c="${id}" data-m="${mood}"${o.t?` data-t="${o.t}"`:""}${o.loop?` data-loop="${o.loop}"`:""} role="img" aria-label="${CAST[id].nom}">${persoSVG(id,mood,/\bfull\b/.test(cls)&&!!OBJSVG[id])}</span>`;
 }
-function persoSVG(id, mood="happy"){
-  if(OBJSVG[id]) return `<svg class="pfb" viewBox="0 0 100 124" aria-hidden="true"><g class="bob">${OBJSVG[id]}</g></svg>`;
+function persoSVG(id, mood="happy", full=false){
+  if(OBJSVG[id]) return `<svg class="pfb" viewBox="0 0 100 ${full?172:124}" aria-hidden="true"><g class="bob">${OBJSVG[id]}</g></svg>`;
   const c=CAST[id];
   return `<svg class="pfb" viewBox="0 0 100 124" aria-hidden="true">
    <g class="bob">
