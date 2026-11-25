@@ -67,8 +67,7 @@ function gauges(){
   <div class="xpbar" id="xpb">${S.moi?`<span class="me">${perso("moi","happy")}</span>`:""}<b>${r.nom}</b><div class="xpt"><i style="width:${r.next?((S.xp-r.base)/(r.next-r.base)*100):100}%"></i></div><span>${S.xp} XP</span></div>`;
 }
 function topbar(){ const done=Q.filter(q=>S.ch[q.id]).length, back=S.back==="parcours"&&S.screen==="q";
-  return `<header class="hdr"><button class="brand" onclick="go('home')" aria-label="Mandat 27 : retour à l'accueil"><span>MANDAT <b>27</b></span></button><span class="hdr-r"><button class="gtog ${S.showG?"on":""}" onclick="S.showG=!S.showG;save();document.querySelector('.gwrap').classList.toggle('on');this.classList.toggle('on')" aria-label="Voir mes jauges" aria-expanded="${!!S.showG}"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 16V9M10 16V4M17 16v-5" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/></svg></button><button class="btn ghost sm" onclick="${back?"S.back=null;go('parcours')":"go('map')"}">${back?"Parcours":"Carte"}</button></span></header>
-  <div class="top"><div class="prog"><i style="width:${done/NQ()*100}%"></i></div><div class="cnt">${done}/${NQ()}</div></div><div class="gwrap ${S.showG?"on":""}">${gauges()}</div>`; }
+  return `<header class="hdr"><button class="brand" onclick="go('home')" aria-label="Mandat 27 : retour à l'accueil"><span>MANDAT <b>27</b></span></button><span class="hdr-r"><span class="hdec">Décision ${Math.min(done+(S.screen==="q"&&!S.ch[Q[S.qi].id]?1:0),NQ())}/${NQ()}</span><button class="gtog ${S.showG?"on":""}" onclick="S.showG=!S.showG;save();document.querySelector('.gwrap').classList.toggle('on');this.classList.toggle('on')" aria-label="Voir mes jauges" aria-expanded="${!!S.showG}"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 16V9M10 16V4M17 16v-5" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/></svg></button>${S.screen==="map"?"":`<button class="btn ghost sm" onclick="${back?"S.back=null;go('parcours')":"go('map')"}">${back?"Parcours":"Carte"}</button>`}</span><i class="hprog" style="width:${done/NQ()*100}%" aria-hidden="true"></i></header><div class="gwrap ${S.showG?"on":""}">${gauges()}</div>`; }
 function src(l,u){ return u?`<a class="src" href="${esc(u)}" target="_blank" rel="noopener">${esc(l)} ↗</a>`:`<span class="src off">${esc(l)}</span>`; }
 
 // ───────── écrans
@@ -118,12 +117,12 @@ V.elect=()=>`<div class="screen elect">
 
 V.map=()=>{ const nxt=Q.findIndex(q=>!S.ch[q.id]);
  return `<div class="screen map">${topbar()}<button class="modechip" onclick="go('mode')"><span>Rythme <b>${MODES[S.mode].nom}</b> · ${NQ()} décisions</span><u>Changer</u></button>
-  ${nxt>=0?say("karim", nxt===0?`Voilà ta feuille de route, ${TITRE()}. On commence par les retraites : touche la première bulle.`:`Prochain dossier : ${Q[nxt].theme.toLowerCase()}. Format du vote : ${VOTE_NOM[fmtVote(nxt)].toLowerCase()}.`):say("karim","Mandat terminé. Les Français attendent ton bilan.",{mood:"wow"})}
   ${ANNEES.map((y,ai)=>{ const qs=Q.map((q,i)=>({q,i})).filter(o=>o.q.an===ai);
    return `<section class="year y${ai}">${landSVG(ai)}<div class="yh"><b>${y.an}</b><div><h3>${y.titre}</h3><p>${y.sous}</p></div></div>
    <div class="path">${qs.map(({q,i},j)=>{ const st=S.ch[q.id]?"done":(i===nxt?"next":(i<nxt||nxt<0?"open":"lock"));
      return `<button class="node ${st}" style="--x:${[0,46,72,46,0,-46][j]}px" ${st==="lock"?"disabled":""} onclick="openQ(${i})">
       <span class="dot">${st==="done"?"✓":j+1}<span class="rv rvnode" data-ab="MapNode" data-state="${{lock:"locked",open:"open",next:"next",done:"done"}[st]}" data-theme="${themeKey(q.theme)}"${S.justDone===q.id?' data-t="complete"':""} aria-hidden="true"></span></span><span class="nt">${esc(q.theme)}</span>${st==="next"?`<span class="here"><span class="rv rvmark" data-ab="PlayerMarker" data-c="${S.moi?"moi":"lea"}"${S.justDone?' data-t="advance"':""} aria-hidden="true"><span class="pfb">${persoSVG(S.moi?"moi":"lea","happy")}</span></span></span>`:""}</button>`; }).join("")}</div></section>`; }).join("")}
+  <div class="mapfoot">${nxt>=0?say("karim", nxt===0?`Voilà ta feuille de route, ${TITRE()}. On commence par les retraites : touche la première bulle.`:`Prochain dossier : ${Q[nxt].theme.toLowerCase()}. Format du vote : ${VOTE_NOM[fmtVote(nxt)].toLowerCase()}.`):say("karim","Mandat terminé. Les Français attendent ton bilan.",{mood:"wow"})}</div>
   ${nxt<0?`<button class="btn big gold" onclick="go('verdict')">Voir le verdict</button><button class="btn ghost" style="margin-top:12px" onclick="go('parcours')">Revoir mon parcours</button>`:""}</div>`; };
 
 V.q=()=>{ const q=Q[S.qi], steps=stepsOf(q), st=steps[S.step];
