@@ -46,10 +46,10 @@ function updXP(){ const e=$("#xpb"); if(!e) return; const r=rang(); e.querySelec
 
 // ───────── décor
 const ICON = {
- urne:`<svg viewBox="0 0 120 120" class="urne"><rect x="18" y="44" width="84" height="64" rx="14" fill="#fff"/><rect x="18" y="44" width="84" height="16" rx="8" fill="#DDE6FF"/><rect x="40" y="48" width="40" height="7" rx="3.5" fill="#13234B"/><rect x="34" y="72" width="52" height="22" rx="6" fill="#2A5BFF"/><text x="60" y="88" text-anchor="middle" font-family="Lilita One,Nunito,sans-serif" font-size="13" fill="#fff">VOTE</text></svg>`,
- bulletin:`<svg viewBox="0 0 60 80" class="bulletin"><rect x="4" y="4" width="52" height="72" rx="8" fill="#fff"/><rect x="12" y="16" width="36" height="6" rx="3" fill="#C9D4F5"/><rect x="12" y="28" width="28" height="6" rx="3" fill="#C9D4F5"/><circle cx="30" cy="54" r="10" fill="#FFC800"/></svg>`,
+ urne:`<svg viewBox="0 0 120 120" class="urne"><rect x="20" y="40" width="80" height="72" rx="6" fill="#BFD3F2" stroke="#1C2554" stroke-width="3"/><rect x="20" y="40" width="80" height="72" rx="6" fill="none" stroke="#9A5B32" stroke-width="6"/><rect x="14" y="32" width="92" height="12" rx="4" fill="#9A5B32" stroke="#1C2554" stroke-width="3"/><rect x="42" y="35" width="36" height="5" rx="2" fill="#1C2554"/><rect x="34" y="88" width="20" height="14" rx="2" fill="#F1E3B8" stroke="#1C2554" stroke-width="1.5" transform="rotate(-10 44 95)"/><rect x="58" y="90" width="20" height="14" rx="2" fill="#F1E3B8" stroke="#1C2554" stroke-width="1.5" transform="rotate(8 68 97)"/><rect x="42" y="114" width="36" height="6" rx="2" fill="#1C2554"/></svg>`,
+ bulletin:`<svg viewBox="0 0 60 80" class="bulletin"><rect x="4" y="16" width="52" height="40" rx="4" fill="#F1E3B8" stroke="#1C2554" stroke-width="3"/><path d="M4 20 L30 40 L56 20" fill="none" stroke="#1C2554" stroke-width="3"/></svg>`,
  logo:`<svg viewBox="0 0 120 120" class="logo"><rect width="120" height="120" rx="30" fill="#2A5BFF"/><g fill="#fff">${[0,1,2].map(r=>[...Array(5+r*2)].map((_,i,a)=>{const R=26+r*12,t=Math.PI*(i/(a.length-1));return `<circle cx="${(60-R*Math.cos(t)).toFixed(1)}" cy="${(82-R*Math.sin(t)).toFixed(1)}" r="4.2"/>`}).join("")).join("")}</g><rect x="56" y="30" width="8" height="44" rx="3" fill="#FFC800"/><path d="M56 74h8l-4 9z" fill="#FFC800"/></svg>`,
- globe:`<svg viewBox="0 0 80 80" class="globe"><circle cx="40" cy="40" r="34" fill="#43C6FF"/><path d="M20 26 Q30 18 38 26 T50 30 Q46 40 36 38 T22 40Z M46 48 Q56 44 60 52 T54 64 Q46 60 46 48Z" fill="#3DDC84"/><ellipse cx="40" cy="40" rx="34" ry="34" fill="none" stroke="#fff" stroke-width="2" opacity=".5"/></svg>`
+ globe:`<svg viewBox="0 0 80 80" class="globe"><circle cx="40" cy="40" r="34" fill="#2F5BEA" stroke="#1C2554" stroke-width="3"/><path d="M20 26 Q30 18 38 26 T50 30 Q46 40 36 38 T22 40Z M46 48 Q56 44 60 52 T54 64 Q46 60 46 48Z" fill="#F5C431"/></svg>`
 };
 function hemicycle(sup){
   const seats=[]; [9,13,17,21].forEach((n,r)=>{ const R=40+r*16; for(let i=0;i<n;i++){ const t=Math.PI*i/(n-1); seats.push([110-R*Math.cos(t),116-R*Math.sin(t),t]); } });
@@ -59,27 +59,28 @@ function hemicycle(sup){
 function gauges(){
   const t=totals(), r=rang();
   // Budget et Climat : jauges à deux sens, zéro au milieu (vert = mieux, rouge = pire)
-  const bip=(v,l,sc,words,tip)=>{ const p=Math.max(-50,Math.min(50,v*sc)), col=v>0?"#22B86A":v<0?"#FF4B55":"#AEB9D8", w=v>0?words[0]:v<0?words[1]:words[2];
-    return `<div class="g" title="${tip}"><div class="gl">${l}</div><div class="gb bip"><b></b><i style="left:${p<0?50+p:50}%;width:${Math.abs(p)}%;background:${col}"></i></div><div class="gv"><span style="color:${v>0?"#138A4C":v<0?"#E03540":"inherit"}">${v>0?"+":v<0?"−":""}${Math.abs(v)}</span> <small>${w}</small></div></div>`; };
+  const bip=(v,l,sc,words,tip)=>{ const p=Math.max(-50,Math.min(50,v*sc)), col=v>0?"#2F5BEA":v<0?"#E5392B":"#AEB9D8", w=v>0?words[0]:v<0?words[1]:words[2];
+    return `<div class="g" title="${tip}"><div class="gl">${l}</div><div class="gb bip"><b></b><i style="left:${p<0?50+p:50}%;width:${Math.abs(p)}%;background:${col}"></i></div><div class="gv"><span style="color:${v>0?"#2F5BEA":v<0?"#E5392B":"inherit"}">${v>0?"+":v<0?"−":""}${Math.abs(v)}</span> <small>${w}</small></div></div>`; };
   const sou=t.n?Math.round(t.soutien*100):null;
   return `<div class="gauges">${bip(t.b,"Budget",8,["économies","dépenses","équilibre"],"Tendance de tes choix sur les finances publiques")}${bip(t.c,"Climat",10,["mieux","pire","neutre"],"Tendance de tes choix sur le climat")}
-   <div class="g" title="Part moyenne des 8 candidats qui défendent tes choix"><div class="gl">Soutiens</div><div class="gb"><i style="width:${sou==null?0:Math.max(4,sou)}%;background:#8B5CF6"></i></div><div class="gv">${sou==null?"–":sou+" %"} <small>${sou==null?"":sou>=60?"large":sou>=35?"partagé":"isolé"}</small></div></div></div>
+   <div class="g" title="Part moyenne des 8 candidats qui défendent tes choix"><div class="gl">Soutiens</div><div class="gb"><i style="width:${sou==null?0:Math.max(4,sou)}%;background:#F5C431"></i></div><div class="gv">${sou==null?"–":sou+" %"} <small>${sou==null?"":sou>=60?"large":sou>=35?"partagé":"isolé"}</small></div></div></div>
   <div class="xpbar" id="xpb">${S.moi?`<span class="me">${perso("moi","happy")}</span>`:""}<b>${r.nom}</b><div class="xpt"><i style="width:${r.next?((S.xp-r.base)/(r.next-r.base)*100):100}%"></i></div><span>${S.xp} XP</span></div>`;
 }
 function topbar(){ const done=Q.filter(q=>S.ch[q.id]).length, back=S.back==="parcours"&&S.screen==="q";
-  return `<header class="hdr"><button class="brand" onclick="go('home')" aria-label="Mandat 27 : retour à l'accueil">${ICON.logo}<span>MANDAT <b>27</b></span></button><button class="btn ghost sm" onclick="${back?"S.back=null;go('parcours')":"go('map')"}">${back?"Parcours":"Carte"}</button></header>
-  <div class="top"><div class="prog"><i style="width:${done/NQ()*100}%"></i></div><div class="cnt">${done}/${NQ()}</div></div>${gauges()}`; }
+  return `<header class="hdr"><button class="brand" onclick="go('home')" aria-label="Mandat 27 : retour à l'accueil"><span>MANDAT <b>27</b></span></button><span class="hdr-r"><button class="gtog ${S.showG?"on":""}" onclick="S.showG=!S.showG;save();document.querySelector('.gwrap').classList.toggle('on');this.classList.toggle('on')" aria-label="Voir mes jauges" aria-expanded="${!!S.showG}"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 16V9M10 16V4M17 16v-5" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/></svg></button><button class="btn ghost sm" onclick="${back?"S.back=null;go('parcours')":"go('map')"}">${back?"Parcours":"Carte"}</button></span></header>
+  <div class="top"><div class="prog"><i style="width:${done/NQ()*100}%"></i></div><div class="cnt">${done}/${NQ()}</div></div><div class="gwrap ${S.showG?"on":""}">${gauges()}</div>`; }
 function src(l,u){ return u?`<a class="src" href="${esc(u)}" target="_blank" rel="noopener">${esc(l)} ↗</a>`:`<span class="src off">${esc(l)}</span>`; }
 
 // ───────── écrans
 const V={};
 V.home=()=>{ const started=Object.keys(S.ch).length;
  return `<div class="screen home">
-  <div class="sky"><div class="sun"></div><div class="cloud c1"></div><div class="cloud c2"></div></div>
-  <div class="hero pop">${ICON.logo}</div>
-  <h1 class="pop d1">MANDAT <span>27</span></h1>
-  <p class="lead pop d2">Tu arrives à l'Élysée. 5 ans, jusqu'à 30 décisions réelles de la campagne 2027. Ton équipe t'aide à comprendre, toi tu tranches.</p>
-  <div class="cast pop d3">${["lea","karim","helene","sam","yuki"].map((k,i)=>`<div class="cm" style="--i:${i}">${perso(k,"happy","",{t:"wave"})}<b>${CAST[k].nom}</b><small>${CAST[k].role}</small></div>`).join("")}</div>
+  <div class="poster">${DECOR.rays}
+   <h1 class="pop d1">MANDAT<br><span>27</span></h1>
+   <p class="lead pop d2">5 ans à l'Élysée.<br>Jusqu'à 30 décisions réelles de la campagne 2027.</p>
+   <div class="pfac">${DECOR.facade}</div>
+   <div class="cast pop d3">${["karim","yuki","lea","helene","sam"].map((k,i)=>`<div class="cm${k==="lea"?" mid":""}" style="--i:${i}">${perso(k,"happy","",{t:"wave"})}<b>${CAST[k].nom}</b><small>${CAST[k].role}</small></div>`).join("")}</div></div>
+  <p class="intro pop d3">Ton équipe t'aide à comprendre. Toi, tu tranches. À la fin, découvre quels candidats ont fait les mêmes choix que toi.</p>
   <div class="stack pop d4">
    <button class="btn big" onclick="${started&&S.moi?"go('map')":"go('mode')"}">${started?"Reprendre mon mandat":"Commencer"}</button>
    <button class="btn ghost" onclick="go('method')">Comment c'est calculé ?</button>
@@ -98,7 +99,7 @@ V.avatar=()=>{ const m=S.moi||{g:null,skin:1,hair:0,st:"short"}; if(!S.moi) S.mo
  const sw=(arr,key,lab)=>`<div class="pick"><span>${lab}</span><div class="sws">${arr.map((c,i)=>`<button class="sw ${m[key]===i?"on":""}" style="background:${Array.isArray(c)?c[0]:c}" onclick="setAv('${key}',${i})" aria-label="${lab} ${i+1}"></button>`).join("")}</div></div>`;
  return `<div class="screen avatar">
   <div class="tag">Avant la photo officielle</div><h2 class="pop">Qui entre à l'Élysée ?</h2>
-  <div class="portrait pop d1"><div class="flag"><i></i><i></i><i></i></div>${perso("moi","happy","big")}<div class="plaque">${m.g?G("Le Président","La Présidente"):"Président·e"} de la République</div></div>
+  <div class="portrait pop d1">${DECOR.shelves}${perso("moi","happy","big")}<div class="plaque">${m.g?G("Le Président","La Présidente"):"Président·e"} de la République</div></div>
   <div class="seg pop d2"><button class="${m.g==="f"?"on":""}" onclick="setAv('g','f')">Présidente</button><button class="${m.g==="m"?"on":""}" onclick="setAv('g','m')">Président</button></div>
   ${sw(SKINS,"skin","Peau")}
   <div class="pick"><span>Coiffure</span><div class="chips">${STYLES.map(s=>`<button class="chip ${m.st===s[0]?"on":""}" onclick="setAv('st','${s[0]}')">${s[1]}</button>`).join("")}</div></div>
@@ -106,7 +107,7 @@ V.avatar=()=>{ const m=S.moi||{g:null,skin:1,hair:0,st:"short"}; if(!S.moi) S.mo
   <button class="btn big gold" ${m.g?"":"disabled"} onclick="photo()">${m.g?"Prendre la photo officielle":"Choisis président ou présidente"}</button>
   <p class="fine">Ton apparence ne change rien au résultat.</p></div>`; };
 V.elect=()=>`<div class="screen elect">
-  <div class="rv rvscene" data-ab="ElectionNight" onclick="skipScene(this)" aria-label="Soirée électorale : c'est toi !"><div class="pfb">
+  <div class="rv rvscene" data-ab="ElectionNight" onclick="skipScene(this)" aria-label="Soirée électorale : c'est toi !"><div class="pfb">${DECOR.redrays}
   <div class="crowd">${["lea","sam","ines","marc","yuki","helene"].map((k,i)=>`<div class="fan" style="--i:${i}">${perso(k,"wow","",{loop:"cheering"})}</div>`).join("")}</div>
   <div class="tv"><div class="tvin"><div class="bandeau">ÉDITION SPÉCIALE</div><div class="count"><span>20:00</span></div><div class="tvme">${perso("moi","happy")}</div><div class="reveal">C'EST TOI !</div></div></div>
   <div class="confetti">${[...Array(24)].map((_,i)=>`<i style="--i:${i}"></i>`).join("")}</div></div></div>
@@ -135,9 +136,10 @@ V.q=()=>{ const q=Q[S.qi], steps=stepsOf(q), st=steps[S.step];
 
 const STEP={};
 STEP.intro=q=>{ const f=fmtIntro(S.qi);
- if(f==="jt") return `<div class="tvbig pop"><div class="bandeau">ÉDITION SPÉCIALE</div><div class="studio">${perso("sam","happy","talk big")}</div>
-   <div class="lower"><b>${esc(q.titre)}</b></div><div class="ticker"><span>${esc(q.theme.toUpperCase())} · ${esc(q.hook)} · ${esc(q.theme.toUpperCase())} · ${esc(q.hook)}</span></div></div>
-   ${say("sam",q.hook,{cls:"pop d1"})}${say("lea",q.pourquoi,{right:1,cls:"pop d2",color:"red"})}`;
+ if(f==="jt") return `<div class="deskbg"><article class="une pop"><div class="une-mast"><b>${UNES[S.qi%4]}</b><small>${esc(ANNEES[q.an].an)} · N° ${S.qi+1} · 2,50 €</small></div>
+   <span class="une-kick">Édition spéciale · ${esc(q.theme)}</span><h2>${esc(q.titre).replace(/ ([?!:;])/g,'\u00a0$1')}</h2>
+   <div class="une-photo">${DECOR.facade}<span class="une-sam">${perso("sam","happy","talk")}</span></div><small class="une-leg">Notre envoyé spécial Sam, devant l'Élysée.</small>
+   <div class="une-cols"><div><b class="r">La situation</b><p>${esc(q.hook)}</p><i></i><i></i></div><div><b class="b">Pourquoi ça te concerne</b><p>${esc(q.pourquoi)}</p><i></i></div></div></article></div>`;
  if(f==="sms") return `<div class="phone pop"><div class="ph-top">${perso("lea","happy")}<div><b>Léa</b><small>en ligne</small></div></div>
    <div class="ph-body"><div class="msg in" data-seq="0">Hé, t'as vu ? ${esc(q.titre)}</div><div class="msg in" data-seq="1">${esc(q.hook)}</div>
    <div class="msg out" data-seq="2">Et moi, ça me concerne comment ?</div><div class="msg in" data-seq="3">${esc(q.pourquoi)}</div><div class="typing" data-seq="4"><i></i><i></i><i></i></div></div></div>`;
@@ -186,7 +188,7 @@ STEP.vote=q=>{ const f=fmtVote(S.qi), O=["A","B","C"];
    <div class="mini-urne">${ICON.urne}</div>
    ${S.pick?`<div class="card pop">${det(S.pick)}<button class="btn" onclick="vote('${S.pick}')">Glisser dans l'urne</button></div>`:""}${extra}`; };
 
-V.drop=()=>`<div class="screen elect"><div class="stage rvstage"><div class="rv rvbox" data-ab="BallotDrop" data-stamp="signe" data-t="drop"><div class="pfb"><div class="b-drop">${ICON.bulletin}</div>${ICON.urne}<div class="stamp">SIGNÉ</div></div></div></div></div>`;
+V.drop=()=>`<div class="screen elect drop">${DECOR.bluerays}<h1 class="avote">A voté&nbsp;!</h1><div class="stage rvstage"><div class="rv rvbox" data-ab="BallotDrop" data-stamp="signe" data-t="drop"><div class="pfb"><div class="b-drop">${ICON.bulletin}</div>${ICON.urne}<div class="stamp">SIGNÉ</div></div></div></div></div>`;
 
 const UNES=["LE QUOTIDIEN","L'ÉCHO NATIONAL","LA DÉPÊCHE DU MATIN","LE JOURNAL DU SOIR"];
 V.result=()=>{ const q=Q[S.qi], o=S.ch[q.id];
@@ -206,7 +208,7 @@ V.result=()=>{ const q=Q[S.qi], o=S.ch[q.id];
 
 V.bilan=()=>{ const an=Q[S.qi].an, y=ANNEES[an], s=yearStats(an), ev=EVENTS.find(e=>e.an===an&&e.si(s));
  return `<div class="screen bilan">${topbar()}<div class="confetti">${[...Array(24)].map((_,i)=>`<i style="--i:${i}"></i>`).join("")}</div>
-  <div class="tag">Fin de l'année ${y.an}</div><h2 class="pop">Bilan : ${esc(y.titre)}</h2>
+  <div class="cal pop"><span class="cal-d">31 décembre</span><b>${y.an}</b></div><h2 class="pop">Bilan : ${esc(y.titre)}</h2>
   <div class="grid3 pop d1"><div class="kpi"><small>Budget</small><b class="big">${s.b>0?"+":""}${s.b}</b></div><div class="kpi"><small>Climat</small><b class="big">${s.c>0?"+":""}${s.c}</b></div><div class="kpi"><small>Soutiens</small><b class="big">${Math.round(s.soutien*100)} %</b></div></div>
   ${ev?`<div class="tvbig small pop d2"><div class="bandeau">FAIT RÉEL</div><div class="studio">${perso("sam","wow","talk big")}</div><div class="lower"><b>${esc(ev.titre)}</b></div></div>
   ${say("sam",ev.txt,{extra:src(ev.src[0],ev.src[1]),cls:"pop d3"})}`:""}
@@ -215,7 +217,7 @@ V.bilan=()=>{ const an=Q[S.qi].an, y=ANNEES[an], s=yearStats(an), ev=EVENTS.find
 V.verdict=()=>{ const m=match(), n=totals().n;
  if(!n) return `<div class="screen">${topbar()}<h2>Pas encore de choix</h2><button class="btn" onclick="go('map')">Retour à la carte</button></div>`;
  return `<div class="screen verdict"><div class="confetti">${[...Array(24)].map((_,i)=>`<i style="--i:${i}"></i>`).join("")}</div>
-  <div class="tag">2 mai 2032</div><h2 class="pop">Ton mandat ressemble à…</h2>
+  <div class="vhead">${DECOR.redrays}${DECOR.city}<div class="tag">2 mai 2032 · 20 h</div><h2 class="pop">Ton mandat ressemble à…</h2></div>
   ${say("karim",`Mode ${MODES[S.mode].nom.toLowerCase()}. Sur tes ${n} décisions, voici les candidats de 2027 qui auraient fait les choix les plus proches. Rang final : ${rang().nom}.`)}
   <div class="panneau">${m.map((r,i)=>`<div class="affiche" style="--d:${i*0.25+0.6}s"><div class="in"><div class="front"><b>?</b></div>
    <div class="back"><div class="rk">${i+1}</div><div class="nm">${esc(CANDS[r.k].nom)}</div><div class="pt">${esc(CANDS[r.k].parti)}</div>
@@ -240,8 +242,8 @@ V.parcours=()=>{
   ${say("karim",`Cinq ans résumés en un coup d'œil, ${TITRE()}. Touche une décision pour revoir les options et ce qu'il fallait retenir.`)}
   <div class="grid3 pop d1"><div class="kpi"><small>Larges soutiens</small><b class="big">${cons}</b></div><div class="kpi"><small>Choix minoritaires</small><b class="big">${solo}</b></div><div class="kpi"><small>Quiz réussis</small><b class="big">${ok}/${qz.length}</b></div></div>
   <div class="card trend pop d2"><b>Ton budget et ton climat, décision après décision</b>
-   <svg viewBox="0 0 ${W} ${H}" class="spark"><line x1="10" x2="${W-10}" y1="${H/2}" y2="${H/2}" stroke="#DDE4F7" stroke-width="2" stroke-dasharray="4 4"/>${[1,2,3,4].map(y=>`<line x1="${xs(y*6-0.5)}" x2="${xs(y*6-0.5)}" y1="4" y2="${H-4}" stroke="#EEF2FF" stroke-width="2"/>`).join("")}${line(0,"#E0A800")}${line(1,"#22B86A")}</svg>
-   <div class="leg"><span><i style="background:#E0A800"></i>Budget (${b>0?"+":""}${b})</span><span><i style="background:#22B86A"></i>Climat (${c>0?"+":""}${c})</span><span class="hint">tendances indicatives</span></div></div>
+   <svg viewBox="0 0 ${W} ${H}" class="spark"><line x1="10" x2="${W-10}" y1="${H/2}" y2="${H/2}" stroke="#DDE4F7" stroke-width="2" stroke-dasharray="4 4"/>${[1,2,3,4].map(y=>`<line x1="${xs(y*6-0.5)}" x2="${xs(y*6-0.5)}" y1="4" y2="${H-4}" stroke="#EEF2FF" stroke-width="2"/>`).join("")}${line(0,"#E5392B")}${line(1,"#2F5BEA")}</svg>
+   <div class="leg"><span><i style="background:#E5392B"></i>Budget (${b>0?"+":""}${b})</span><span><i style="background:#2F5BEA"></i>Climat (${c>0?"+":""}${c})</span><span class="hint">tendances indicatives</span></div></div>
   ${ANNEES.map((y,ai)=>`<div class="pyear"><b>${y.an}</b> ${esc(y.titre)}</div>
    ${Q.map((q,i)=>({q,i})).filter(o=>o.q.an===ai).map(({q,i})=>{ const o=S.ch[q.id];
      if(!o) return `<div class="pc-item off"><span class="ol">?</span><div><small>${esc(q.theme)}</small><b>${esc(q.titre)}</b><p>Pas encore décidé</p></div></div>`;
@@ -324,39 +326,37 @@ function rr(x,X,Y,w,h,r){ x.beginPath(); x.moveTo(X+r,Y); x.arcTo(X+w,Y,X+w,Y+h,
 function fitT(x,t,max,size,font){ let s=size; do{ x.font=`${font.replace("#",s)}`; s-=2; } while(x.measureText(t).width>max&&s>14); return t; }
 function svgImg(svg){ return new Promise(ok=>{ const s=svg.replace('<svg ','<svg xmlns="http://www.w3.org/2000/svg" ').replace(/class="[^"]*"/g,""); const im=new Image(); im.onload=()=>ok(im); im.onerror=()=>ok(null); im.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(s); }); }
 async function shareCard(){
-  try{ await Promise.all(['80px "Lilita One"','900 40px Nunito','800 40px Nunito'].map(f=>document.fonts.load(f))); }catch(e){}
+  try{ await Promise.all(['80px Anton','700 40px Archivo','800 40px Archivo'].map(f=>document.fonts.load(f))); }catch(e){}
   const W=1080,H=1920, cv=document.createElement("canvas"); cv.width=W; cv.height=H; const x=cv.getContext("2d");
-  const L='"Lilita One", Nunito, sans-serif', N='Nunito, system-ui, sans-serif';
+  const L='Anton, Impact, sans-serif', N='Archivo, system-ui, sans-serif', INK="#1C2554", PAP="#F2EADB", RED="#E5392B", YEL="#F5C431", BLU="#2F5BEA";
   const m=match(), t=totals(), r=rang(), sou=Math.round(t.soutien*100);
-  // fond
-  const g=x.createLinearGradient(0,0,0,H); g.addColorStop(0,"#2A5BFF"); g.addColorStop(.55,"#1C3FD1"); g.addColorStop(1,"#13234B"); x.fillStyle=g; x.fillRect(0,0,W,H);
-  x.fillStyle="rgba(255,255,255,.07)"; for(let k=0;k<3;k++) for(let i=0;i<9+k*4;i++){ const R=300+k*120, a=Math.PI*i/(8+k*4); x.beginPath(); x.arc(W/2-R*Math.cos(a),700-R*Math.sin(a),16,0,7); x.fill(); }
-  // tricolore
-  [["#2A5BFF",0],["#fff",360],["#FF4B55",720]].forEach(([c,o])=>{ x.fillStyle=c; x.fillRect(o,0,360,18); });
-  // titre
-  x.textAlign="center"; x.fillStyle="#fff"; x.font=`120px ${L}`; const w1=x.measureText("MANDAT ").width, w2=x.measureText("27").width, x0=(W-w1-w2)/2; x.textAlign="left"; x.fillText("MANDAT ",x0,190); x.fillStyle="#FFC800"; x.fillText("27",x0+w1,190); x.textAlign="center";
-  x.font=`800 40px ${N}`; x.fillStyle="rgba(255,255,255,.85)"; x.fillText(`Mon mandat de ${G("président","présidente")} · 2027-2032`,W/2,255);
-  // avatar
-  x.fillStyle="rgba(255,255,255,.14)"; x.beginPath(); x.arc(W/2,470,190,0,7); x.fill();
-  const av=await svgImg(persoSVG("moi","happy")); if(av){ x.save(); x.beginPath(); x.arc(W/2,470,190,0,7); x.clip(); x.drawImage(av,W/2-165,300,330,409); x.restore(); }
-  rr(x,W/2-300,600,600,76,38); x.fillStyle="#FFC800"; x.fill(); x.fillStyle="#13234B"; fitT(x,r.nom,540,46,`#px ${L}`); x.fillText(r.nom,W/2,654);
+  const box=(X,Y,w,h,fill,sh=14)=>{ rr(x,X+sh,Y+sh,w,h,30); x.fillStyle=INK; x.fill(); rr(x,X,Y,w,h,30); x.fillStyle=fill; x.fill(); x.lineWidth=8; x.strokeStyle=INK; x.stroke(); };
+  // papier + rayons jaunes (double impression décalée)
+  x.fillStyle=PAP; x.fillRect(0,0,W,H);
+  const rays=(dx,dy,col)=>{ x.fillStyle=col; for(let k=0;k<13;k++){ const a=Math.PI+k*.26; x.beginPath(); x.moveTo(W/2+dx,900+dy); x.lineTo(W/2+dx+2000*Math.cos(a),900+dy+2000*Math.sin(a)); x.lineTo(W/2+dx+2000*Math.cos(a+.13),900+dy+2000*Math.sin(a+.13)); x.fill(); } };
+  x.globalAlpha=.3; rays(8,6,BLU); x.globalAlpha=1; rays(0,0,YEL);
+  [[BLU,0],[PAP,360],[RED,720]].forEach(([c,o])=>{ x.fillStyle=c; x.fillRect(o,0,360,26); });
+  // titre d'affiche
+  x.textAlign="left"; x.fillStyle=INK; x.font=`200px ${L}`; x.fillText("MANDAT",44,250); const w1=x.measureText("MANDAT ").width; x.fillStyle=RED; x.fillText("27",44+w1,250);
+  x.fillStyle=INK; x.font=`700 40px ${N}`; x.fillText(`Mon mandat de ${G("président","présidente")} · 2027-2032`,48,320);
+  // portrait
+  const av=await svgImg(persoSVG("moi","happy")); if(av){ x.drawImage(av,W/2-210,350,420,521); }
+  x.fillStyle=PAP; x.fillRect(0,840,W,H-840); x.fillStyle=INK; x.fillRect(0,836,W,8);
+  box(W/2-330,790,660,96,RED,10); x.fillStyle=PAP; x.textAlign="center"; fitT(x,r.nom.toUpperCase(),600,58,`#px ${L}`); x.fillText(r.nom.toUpperCase(),W/2,860);
   // top 3
-  x.fillStyle="#fff"; x.font=`64px ${L}`; x.fillText("Mes choix ressemblent à…",W/2,790);
-  const cols=["#FFC800","#E6ECFA","#F2A65A"];
-  m.slice(0,3).forEach((c,i)=>{ const y=840+i*230; rr(x,70,y,940,200,40); x.fillStyle="#fff"; x.fill();
-    x.fillStyle=cols[i]; x.beginPath(); x.arc(160,y+100,58,0,7); x.fill(); x.fillStyle="#13234B"; x.font=`68px ${L}`; x.textAlign="center"; x.fillText(i+1,160,y+124);
-    x.textAlign="left"; fitT(x,CANDS[c.k].nom,500,56,`#px ${L}`); x.fillText(CANDS[c.k].nom,250,y+82);
-    x.font=`800 30px ${N}`; x.fillStyle="#5B6B94"; fitT(x,CANDS[c.k].parti,480,30,`800 #px ${N}`); x.fillText(CANDS[c.k].parti,250,y+124);
-    rr(x,250,y+146,560,22,11); x.fillStyle="#E6ECFA"; x.fill(); rr(x,250,y+146,Math.max(22,5.6*c.pct),22,11); x.fillStyle=i===0?"#2A5BFF":"#8EA6FF"; x.fill();
-    x.textAlign="right"; x.fillStyle="#13234B"; x.font=`76px ${L}`; x.fillText(c.pct+"%",975,y+128); x.textAlign="center"; });
+  x.fillStyle=INK; x.textAlign="left"; x.font=`84px ${L}`; x.fillText("MES CHOIX RESSEMBLENT À…",48,1000);
+  m.slice(0,3).forEach((c,i)=>{ const y=1040+i*190; box(48,y,960,160,i===0?YEL:PAP);
+    x.fillStyle=INK; x.textAlign="left"; x.font=`104px ${L}`; x.fillText(i+1,84,y+118);
+    fitT(x,CANDS[c.k].nom.toUpperCase(),560,60,`#px ${L}`); x.fillText(CANDS[c.k].nom.toUpperCase(),190,y+82);
+    fitT(x,CANDS[c.k].parti,560,30,`600 #px ${N}`); x.fillText(CANDS[c.k].parti,190,y+124);
+    x.textAlign="right"; x.fillStyle=RED; x.font=`100px ${L}`; x.fillText(c.pct+" %",975,y+118); });
   // stats
-  const st=[["Décisions",String(t.n)],["Budget",(t.b>0?"+":t.b<0?"−":"")+Math.abs(t.b)],["Climat",(t.c>0?"+":t.c<0?"−":"")+Math.abs(t.c)],["Soutiens",sou+"%"]];
-  st.forEach(([l,v],i)=>{ const bx=70+i*240; rr(x,bx,1560,220,150,32); x.fillStyle="rgba(255,255,255,.14)"; x.fill();
-    x.fillStyle="#fff"; x.font=`64px ${L}`; x.fillText(v,bx+110,1640); x.font=`800 28px ${N}`; x.fillStyle="rgba(255,255,255,.8)"; x.fillText(l,bx+110,1684); });
+  const st=[["DÉCISIONS",String(t.n)],["BUDGET",(t.b>0?"+":t.b<0?"−":"")+Math.abs(t.b)],["CLIMAT",(t.c>0?"+":t.c<0?"−":"")+Math.abs(t.c)],["SOUTIENS",sou+" %"]];
+  box(48,1630,984,130,PAP,10); st.forEach(([l,v],i)=>{ const bx=48+i*246; if(i){ x.fillStyle=INK; x.fillRect(bx-4,1630,8,130); }
+    x.textAlign="center"; x.fillStyle=INK; x.font=`72px ${L}`; x.fillText(v,bx+123,1712); x.font=`700 24px ${N}`; x.fillText(l,bx+123,1745); });
   // pied
-  x.fillStyle="#FFC800"; x.font=`52px ${L}`; x.fillText("Et toi, tu ferais quoi ?",W/2,1790);
-  x.fillStyle="#fff"; x.font=`900 36px ${N}`; x.fillText(SITE+"  ·  Apprenti Politique",W/2,1846);
-  x.fillStyle="rgba(255,255,255,.6)"; x.font=`700 24px ${N}`; x.fillText(`Mode ${MODES[S.mode].nom.toLowerCase()} · ni un sondage, ni une consigne de vote`,W/2,1888);
+  x.textAlign="left"; x.fillStyle=RED; x.font=`76px ${L}`; x.fillText("ET TOI, TU FERAIS QUOI ?",48,1850);
+  x.fillStyle=INK; const ft=`${SITE} · Apprenti Politique · ni un sondage, ni une consigne de vote`; fitT(x,ft,984,30,`700 #px ${N}`); x.fillText(ft,48,1896);
   return new Promise(ok=>cv.toBlob(ok,"image/png"));
 }
 function shareText(){ const m=match().slice(0,3).map((r,i)=>`${i+1}. ${CANDS[r.k].nom} ${r.pct} %`).join("\n");

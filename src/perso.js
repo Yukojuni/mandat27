@@ -5,8 +5,8 @@ const CAST = {
  helene:{nom:"Hélène",role:"économiste",             skin:"#F2C9A5", sh:"#E2B38D", hair:"#C9CEDD", st:"bob",   suit:"#2A5BFF", suit2:"#1E46D6", glasses:1},
  sam:   {nom:"Sam",   role:"journaliste",            skin:"#E8B48F", sh:"#D69F79", hair:"#E07A2E", st:"curly", suit:"#8B5CF6", suit2:"#6D3FE0"},
  yuki:  {nom:"Yuki",  role:"diplomate",              skin:"#F0C8A0", sh:"#DDB289", hair:"#15151F", st:"long",  suit:"#43C6FF", suit2:"#1E8BFF"},
- ines:  {nom:"Inès",  role:"chercheuse",             skin:"#D9A27A", sh:"#C68D66", hair:"#2B1A12", st:"long",  suit:"#3DDC84", suit2:"#22B86A"},
- marc:  {nom:"Marc",  role:"chercheur",              skin:"#8D5A3B", sh:"#7A4B30", hair:"#2B1A12", st:"short", suit:"#FF8A3D", suit2:"#E06E22", glasses:1}
+ ines:  {nom:"Inès",  role:"chercheuse",             skin:"#D9A27A", sh:"#C68D66", hair:"#2B1A12", st:"long",  suit:"#2F5BEA", suit2:"#2448C0"},
+ marc:  {nom:"Marc",  role:"chercheur",              skin:"#8D5A3B", sh:"#7A4B30", hair:"#2B1A12", st:"short", suit:"#E5392B", suit2:"#C22D21", glasses:1}
 };
 Object.keys(CAST).forEach(k=>CAST[k].kind=k);
 function mouth(m){

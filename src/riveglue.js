@@ -81,6 +81,8 @@ function rvPrewarm(){ // instances préparées hors champ pendant l'accueil
 function rvInit(){
   RV.rm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
   if(typeof rive==="undefined") return;
+  // Les animations Rive actuelles sont dans l'ancien style : coupées par défaut, ?rive=1 pour les tester.
+  if(!/[?&]rive=1/.test(location.search)) return;
   try{ rive.RuntimeLoader.setWasmUrl("rive/rive.wasm"); rive.Rive.suppressDeprecationWarn=true; }catch(_){}
   const go=b=>{ RV.buf=b; RV.file=new rive.RiveFile({buffer:b}); RV.file.init().then(()=>{ RV.ok=true; rvPrewarm(); rvMount(); }).catch(()=>{}); };
   if(window.MANDAT27_RIV){ try{ const s=atob(window.MANDAT27_RIV), u=new Uint8Array(s.length); for(let i=0;i<s.length;i++) u[i]=s.charCodeAt(i); go(u.buffer); return; }catch(_){} }

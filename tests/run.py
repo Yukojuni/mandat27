@@ -37,7 +37,7 @@ def play(v, w, h, reduced, shots=False, gender="f", mode="complet"):
                             has_touch=w<500, permissions=["clipboard-read","clipboard-write"])
         page = ctx.new_page(); page.set_default_timeout(8000); page.on("pageerror", lambda e: errs.append(str(e)))
         page.on("console", lambda m: m.type=="error" and errs.append(m.text))
-        page.goto(URL); page.wait_for_timeout(300)
+        page.goto(URL + ("?rive=1" if not reduced else "")); page.wait_for_timeout(300)
         page.evaluate("localStorage.clear()"); page.reload(); page.wait_for_timeout(300)
         snap = lambda n: shots and page.screenshot(path=str(OUT/f"{v}_{n}.png"), full_page=True)
         check(page, v, "accueil"); snap("00_home")
@@ -154,7 +154,7 @@ def play(v, w, h, reduced, shots=False, gender="f", mode="complet"):
             click_text(page, "Retour"); page.wait_for_timeout(200)
             if not page.locator(".screen.verdict").count(): issue(v,"méthode","Retour ne ramène pas au verdict")
         rv = page.evaluate("[RV.ok, RV.pool.length, RV.pool.filter(p=>p.ready).length, RV.pool.filter(p=>p.dead).length]")
-        if not rv[0] or rv[3]: issue(v,"rive",f"Rive non chargé ou instances en échec {rv}")
+        if not reduced and (not rv[0] or rv[3]): issue(v,"rive",f"Rive non chargé ou instances en échec {rv}")
         if rv[1] > NQ + 15: issue(v,"rive",f"trop d'instances Rive créées: {rv[1]}")
         if mode == "rapide" and page.locator(".screen.verdict").count():
             click_text(page, "Passer en Trimestriel"); page.wait_for_timeout(300)
