@@ -81,6 +81,9 @@ def play(v, w, h, reduced, shots=False, gender="f", mode="complet"):
             if shots and n < 6: page.wait_for_timeout(1800); snap(f"2{n}_vote_{fmt}")
             check(page, v, f"décision {n+1} vote {fmt}")
             choice = random.choice("ABC")
+            if n == 0:
+                page.locator(".imp").click(); page.wait_for_timeout(100)
+                if not page.evaluate("!!S.imp[Q[S.qi].id]"): issue(v,"coeur","le cœur ne coche pas « compte double »")
             if fmt=="cartes":
                 page.locator(f"#o{choice}").click(); page.wait_for_timeout(350); page.locator(f"#o{choice} .btn").click()
             elif fmt=="swipe":
@@ -101,7 +104,7 @@ def play(v, w, h, reduced, shots=False, gender="f", mode="complet"):
             else:
                 page.locator(".bal").nth("ABC".index(choice)).click(); page.wait_for_timeout(200)
                 check(page, v, f"décision {n+1} bulletin choisi"); click_text(page, "Glisser dans l'urne")
-            page.wait_for_timeout(2100)
+            page.wait_for_timeout(3000)
             got = page.evaluate("S.ch[Q[S.qi].id]")
             if got != choice: issue(v, f"décision {n+1} ({fmt})", f"vote enregistré {got} au lieu de {choice}")
             if not page.locator(".res").count(): issue(v, f"décision {n+1}", "écran résultat absent"); 
@@ -118,7 +121,7 @@ def play(v, w, h, reduced, shots=False, gender="f", mode="complet"):
           except Exception as e:
             issue(v, f"décision {n+1}", "EXCEPTION " + str(e).split(chr(10))[0]); page.screenshot(path=str(OUT/f"{v}_fail_{n}.png"), full_page=True)
             page.evaluate("go('map')")
-        if fmts_seen != {"cartes","swipe","ministres","curseur","bulletin"}: issue(v,"formats",f"vus: {fmts_seen}")
+        if fmts_seen != {"cartes","ministres","curseur","bulletin"}: issue(v,"formats",f"vus: {fmts_seen}")
         if not page.locator(".screen.verdict").count(): issue(v,"fin","verdict non atteint")
         else:
             page.wait_for_timeout(0 if reduced else 3500); check(page, v, "verdict"); snap("50_verdict")

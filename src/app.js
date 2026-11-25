@@ -5,7 +5,7 @@ const opt = l => l===2?"A":(l===-2?"C":"B");
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const INTROS = ["jt","sms","dossier"];
-const VOTES  = ["cartes","swipe","ministres","curseur","bulletin"];
+const VOTES  = ["cartes","ministres","curseur","bulletin"];
 const VOTE_NOM = {cartes:"Les 3 options",swipe:"Glisse la carte",ministres:"Conseil des ministres",curseur:"Le curseur",bulletin:"Le bulletin"};
 const RANGS = [[0,["Président stagiaire","Présidente stagiaire"]],[120,["Président à l'écoute","Présidente à l'écoute"]],[300,["Président informé","Présidente informée"]],[520,["Président expert","Présidente experte"]],[760,["Président chevronné","Présidente chevronnée"]]];
 const G = (m,f) => (S.moi&&S.moi.g==="m")?m:f;
@@ -22,7 +22,7 @@ function save(){ try{ localStorage.setItem("mandat27v2", JSON.stringify(S)); }ca
 function load(){ try{ return JSON.parse(localStorage.getItem("mandat27v2")); }catch(e){ return null; } }
 const qIndex = id => Q.findIndex(q=>q.id===id);
 const fmtIntro = i => INTROS[i%3];
-const fmtVote = i => VOTES[i%5];
+const fmtVote = i => VOTES[i%VOTES.length];
 function stepsOf(q){ return ["intro", QUIZ[q.id]?"quiz":"faits", "debat", "ailleurs", "vote"]; }
 const STEP_NOM = {intro:"L'alerte",quiz:"Devine le chiffre",faits:"Les chiffres",debat:"Le débat",ailleurs:"Ailleurs",vote:"Ta décision"};
 
@@ -145,7 +145,7 @@ STEP.intro=q=>{ const f=fmtIntro(S.qi);
  return `<div class="desk pop">${perso("karim","neutral","talk big")}<div class="folder"><div class="tab">DOSSIER ${S.qi+1}/${NQ()}</div><div class="stampu">URGENT</div><h2>${esc(q.titre)}</h2></div></div>
    ${say("karim",q.hook,{cls:"pop d1"})}<div class="postit pop d2"><b>Post-it de Léa</b><p>${esc(q.pourquoi)}</p></div>`; };
 STEP.quiz=q=>{ const z=QUIZ[q.id], a=S.quiz[q.id];
- return `${say("helene",z.q,{mood:"happy"})}
+ return `<div class="qhead pop">${perso("helene","happy","talk")}<h2>${esc(z.q).replace(/ ([?!:;])/g,'\u00a0$1')}</h2></div>
   <div class="quiz">${z.c.map((c,i)=>`<button class="qa ${a!=null?(i===z.ok?"ok":(i===a?"ko":"dim")):""}" ${a!=null?"disabled":""} onclick="answer(${i},this)">${esc(c)}</button>`).join("")}</div>
   ${a!=null?`${say("helene",a===z.ok?"Bien vu ! Et voilà les autres chiffres clés.":"Pas tout à fait. Beaucoup de gens se trompent sur celui-là. Voilà les chiffres clés.",{mood:a===z.ok?"happy":"wow",t:a===z.ok?"cheer":"surprise"})}
    ${q.faits.map((f,i)=>`<div class="card fact pop d${i}"><p>${esc(f[0])}</p>${src(f[1],f[2])}</div>`).join("")}
@@ -163,16 +163,10 @@ STEP.ailleurs=q=>`<div class="yukihead pop">${perso("yuki","happy","talk big")}$
      ${r?`<p class="res"><span class="vd" style="color:${v[1]};background:${v[2]}">${v[0]}</span>${esc(r[0])}</p>${src(r[2],r[3])}`:""}</div>`; }).join("")}</div>`;
 STEP.vote=q=>{ const f=fmtVote(S.qi), O=["A","B","C"];
  const det=k=>{ const o=q.opts[k]; return `<p><span class="pl g">Point fort</span>${esc(o.fort)}</p><p><span class="pl r">Point faible</span>${esc(o.faible)}</p><p class="rep"><span class="pl b">Ses défenseurs répondent</span>${esc(o.rep)}</p>`; };
- const extra=`<label class="imp"><input type="checkbox" ${S.imp[q.id]?"checked":""} onchange="S.imp['${q.id}']=this.checked;save()"> Ce sujet compte beaucoup pour moi (compte double)</label><button class="link" onclick="vote('X')">Je ne sais pas, je passe</button>`;
- const head=`<div class="qremind pop"><span class="qr-l">La question</span><b>${esc(q.titre).replace(/ ([?!:;])/g,'\u00a0$1')}</b><p>${esc(q.hook).replace(/ ([?!:;])/g,'\u00a0$1')}</p></div><div class="vfmt pop">${VOTE_NOM[f]}</div>`;
+ const extra=`<label class="imp"><input type="checkbox" class="vh" ${S.imp[q.id]?"checked":""} onchange="S.imp['${q.id}']=this.checked;save()"><svg class="heart" viewBox="0 0 32 30" aria-hidden="true"><path d="M16 28 C6 20 2 15 2 9.5 A7 7 0 0 1 16 6 A7 7 0 0 1 30 9.5 C30 15 26 20 16 28Z"/></svg><span>Ce sujet me tient à cœur<small>il compte double dans le verdict</small></span></label><button class="link" onclick="vote('X')">Je ne sais pas, je passe</button>`;
+ const head=`<div class="vhemi pop">${DECOR.hemiback}${hemicycle(0)}</div><div class="qremind pop"><span class="qr-l">Ta décision</span><b>${esc(q.titre).replace(/ ([?!:;])/g,'\u00a0$1')}</b><p>${esc(q.hook).replace(/ ([?!:;])/g,'\u00a0$1')}</p></div><div class="vfmt pop">${VOTE_NOM[f]}</div>`;
  if(f==="cartes") return `${head}${say("karim","Trois options sur la table. Touche-les pour voir leurs forces et faiblesses.")}
-   ${O.map((k,i)=>`<div class="opt pop d${i}" id="o${k}" onclick="peek('${k}')"><div class="oh"><span class="ol">${k}</span><b>${esc(q.opts[k].t)}</b></div><div class="od">${det(k)}<button class="btn" onclick="event.stopPropagation();vote('${k}')">Je signe ce choix</button></div></div>`).join("")}${extra}`;
- if(f==="swipe") return `${head}${say("karim","Glisse la carte : à droite pour l'option A, à gauche pour l'option C. Le bouton du milieu, c'est le compromis.")}
-   <div class="deck"><div class="lab l">${esc(q.opts.C.t)}</div><div class="lab r">${esc(q.opts.A.t)}</div>
-    <div class="scard" id="sc"><div class="sc-top">${perso("karim","neutral")}<span>Dossier ${S.qi+1}</span></div><h3>${esc(q.titre)}</h3>
-     <div class="sides"><span>← C</span><span>A →</span></div></div></div>
-   <div class="sbtns"><button class="rb c" onclick="vote('C')" aria-label="Option C">C</button><button class="rb b" onclick="vote('B')">B · ${esc(q.opts.B.t)}</button><button class="rb a" onclick="vote('A')" aria-label="Option A">A</button></div>
-   <details class="cmp"><summary>Comparer les 3 options avant de glisser</summary>${O.map(k=>`<div class="card"><b>${k}. ${esc(q.opts[k].t)}</b>${det(k)}</div>`).join("")}</details>${extra}`;
+   ${O.map((k,i)=>`<div class="opt pop d${i}" id="o${k}" onclick="peek('${k}')"><div class="oh"><span class="ol">${k}</span><b>${esc(q.opts[k].t)}</b></div><div class="od">${det(k)}<button class="btn" onclick="event.stopPropagation();vote('${k}')">Signer la loi</button></div></div>`).join("")}${extra}`;
  if(f==="ministres"){ const mins=["helene","karim","yuki"];
    return `${head}${say("karim","Conseil des ministres. Chacun défend une option. Touche un ministre pour l'écouter, puis suis celui qui te convainc.")}
    <div class="table">${O.map((k,i)=>`<button class="min ${S.pick===k?"sel":""}" onclick="pickMin('${k}')">${perso(mins[i],S.pick===k?"happy":"neutral","talk")}<span class="ol">${k}</span></button>`).join("")}</div>
@@ -187,19 +181,25 @@ STEP.vote=q=>{ const f=fmtVote(S.qi), O=["A","B","C"];
    <div class="mini-urne">${ICON.urne}</div>
    ${S.pick?`<div class="card pop">${det(S.pick)}<button class="btn" onclick="vote('${S.pick}')">Glisser dans l'urne</button></div>`:""}${extra}`; };
 
-V.drop=()=>`<div class="screen elect drop">${DECOR.bluerays}<h1 class="avote">A voté&nbsp;!</h1><div class="stage rvstage"><div class="rv rvbox" data-ab="BallotDrop" data-stamp="signe" data-t="drop"><div class="pfb"><div class="b-drop">${ICON.bulletin}</div>${ICON.urne}<div class="stamp">SIGNÉ</div></div></div></div></div>`;
+V.drop=()=>{ const n=Object.keys(S.ch).filter(k=>S.ch[k]!=="X").length, o=S.ch[Q[S.qi].id]||"";
+ return `<div class="screen drop" onclick="dropSkip()">${DECOR.bluerays}<div class="dz">
+  <p class="dz-k">Assemblée nationale · scrutin n° ${S.qi+1}</p>
+  <div class="dz-urne"><div class="dz-env"><svg viewBox="0 0 120 84" aria-hidden="true"><rect x="4" y="4" width="112" height="76" rx="6" fill="#F1E3B8" stroke="#1C2554" stroke-width="5"/><path d="M4 10 L60 48 L116 10" fill="none" stroke="#1C2554" stroke-width="5"/><text x="60" y="74" text-anchor="middle" font-family="Anton,Impact,sans-serif" font-size="22" fill="#E5392B">${o}</text></svg></div>
+   <div class="dz-box"><span class="dz-lid"><i></i></span><span class="dz-glass">${[...Array(Math.min(n-1,9))].map((_,i)=>`<b style="--x:${(i*37)%70}%;--r:${(i*29)%40-20}deg;--y:${Math.floor(i/3)*14}px"></b>`).join("")}<b class="dz-new"></b></span><span class="dz-cnt">N° <em id="dzn">${String(Math.max(n-1,0)).padStart(5,"0")}</em></span></div></div>
+  <h1 class="dz-stamp">A voté&nbsp;!</h1><p class="dz-sub">Ta loi part à l'Assemblée…</p></div></div>`; };
+function dropSkip(){ clearTimeout(window._dz); go("result"); }
 
 const UNES=["LE QUOTIDIEN","L'ÉCHO NATIONAL","LA DÉPÊCHE DU MATIN","LE JOURNAL DU SOIR"];
 V.result=()=>{ const q=Q[S.qi], o=S.ch[q.id];
  if(o==="X") return `<div class="screen q">${topbar()}${say("lea","Tu as passé ce sujet. C'est ok de ne pas avoir d'avis, il ne comptera pas dans le verdict.",{mood:"neutral"})}<div class="card lesson"><b>À retenir</b><p>${esc(q.lecon)}</p></div><button class="btn big" onclick="next()">Continuer</button></div>`;
  const op=q.opts[o], sup=supporters(q,o).length;
- const kw=sup>=5?"Large soutien":sup>=3?"Le pays divisé":sup>=1?"Choix minoritaire":"Coup de poker";
- const arrow=v=>v>0?`<span class="up">▲ mieux</span>`:v<0?`<span class="down">▼ pire</span>`:`<span class="eq">= stable</span>`;
  const climat=q.opts.A.c||q.opts.B.c||q.opts.C.c;
+ const k=(lab,v,none)=>none?`<div class="kpi"><small>${lab}</small><b class="big eq">–</b><span>sans effet</span></div>`:`<div class="kpi"><small>${lab}</small><b class="big ${v>0?"up":v<0?"down":"eq"}">${v>0?"▲":v<0?"▼":"="}</b><span>${v>0?"mieux":v<0?"pire":"stable"}</span></div>`;
  return `<div class="screen q res">${topbar()}
-  <div class="journal"><div class="mast">${UNES[S.qi%4]}<small>${esc(ANNEES[q.an].an)} · édition spéciale</small></div><div class="kw">${kw.toUpperCase()}</div><h2>${esc(op.t)}</h2><p>${G("Le président","La présidente")} a tranché sur ${esc(q.theme.toLowerCase())}.</p></div>
-  <div class="hemibox pop d2">${hemicycle(sup)}<p><b>${sup} des 8</b> principaux candidats défendent ce choix. Noms cachés jusqu'à la fin.</p></div>
-  <div class="grid3 pop d3"><div class="kpi"><small>Budget</small>${arrow(op.b)}</div><div class="kpi"><small>Climat</small>${climat?arrow(op.c):'<span class="eq">sans effet</span>'}</div><div class="kpi"><small>XP</small><b class="big">+20</b></div></div>
+  <span class="tag">Ton choix · ${o}</span><h1 class="restitle pop">${esc(op.t)}</h1>
+  <div class="vhemi big pop d1">${DECOR.hemiback}${hemicycle(sup)}</div>
+  <p class="supline pop d2">Candidats qui défendent ce choix&nbsp;: <b>${sup} sur 8</b><small>Leurs noms restent cachés jusqu'au verdict.</small></p>
+  <div class="grid3 pop d3">${k("Budget",op.b)}${k("Climat",op.c,!climat)}<div class="kpi"><small>XP</small><b class="big">+20</b><span>décision</span></div></div>
   ${say("karim",sup>=5?"Ça devrait passer à l'Assemblée sans trop de casse.":sup>=3?"Ça passera, mais il faudra négocier.":"Accroche-toi : on va devoir convaincre presque tout le monde.",{mood:sup>=5?"happy":sup>=3?"neutral":"wow",cls:"pop d4",t:sup>=5?"nod":sup>=3?null:"surprise"})}
   <div class="card lesson pop d5"><b>À retenir</b><p>${esc(q.lecon)}</p></div>
   <p class="fine">Les flèches sont des tendances indicatives, pas des prévisions chiffrées.</p>
@@ -209,7 +209,7 @@ V.bilan=()=>{ const an=Q[S.qi].an, y=ANNEES[an], s=yearStats(an), ev=EVENTS.find
  return `<div class="screen bilan">${topbar()}<div class="confetti">${[...Array(24)].map((_,i)=>`<i style="--i:${i}"></i>`).join("")}</div>
   <div class="cal pop"><span class="cal-d">31 décembre</span><b>${y.an}</b></div><h2 class="pop">Bilan : ${esc(y.titre)}</h2>
   <div class="grid3 pop d1"><div class="kpi"><small>Budget</small><b class="big">${s.b>0?"+":""}${s.b}</b></div><div class="kpi"><small>Climat</small><b class="big">${s.c>0?"+":""}${s.c}</b></div><div class="kpi"><small>Soutiens</small><b class="big">${Math.round(s.soutien*100)} %</b></div></div>
-  ${ev?`<div class="tvbig small pop d2"><div class="bandeau">FAIT RÉEL</div><div class="studio">${perso("sam","wow","talk big")}</div><div class="lower"><b>${esc(ev.titre)}</b></div></div>
+  ${ev?`<span class="tag red pop d2">Fait réel</span><h2 class="evt pop d2">${esc(ev.titre)}</h2>
   ${say("sam",ev.txt,{extra:src(ev.src[0],ev.src[1]),cls:"pop d3"})}`:""}
   <button class="btn big pop d4" onclick="go(${an===4?"'verdict'":"'map'"})">${an===4?"Fin du mandat : le verdict":"Année suivante"}</button></div>`; };
 
@@ -279,7 +279,10 @@ function slide(v){ const k=["A","B","C"][+v], q=Q[S.qi]; S.pick=k; const o=q.opt
   $("#sldet").innerHTML=`<b>${esc(o.t)}</b><p><span class="pl g">Point fort</span>${esc(o.fort)}</p><p><span class="pl r">Point faible</span>${esc(o.faible)}</p><p class="rep"><span class="pl b">Ses défenseurs répondent</span>${esc(o.rep)}</p>`; $("#sldet").classList.remove("pulse"); void $("#sldet").offsetWidth; $("#sldet").classList.add("pulse"); }
 function answer(i,el){ const z=QUIZ[Q[S.qi].id]; S.quiz[Q[S.qi].id]=i; if(i===z.ok){ addXP(15,el); } render(); if(i===z.ok) burst(); else { const b=document.querySelectorAll(".qa")[i]; b&&b.classList.add("shake"); } }
 const themeKey = t => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-function vote(k){ const first=!S.ch[Q[S.qi].id]; if(first&&k!=="X") S.justDone=Q[S.qi].id; S.ch[Q[S.qi].id]=k; S.pick=null; if(k!=="X"&&first) S.xp+=20; save(); if(k==="X"){ go("result"); return; } go("drop"); setTimeout(()=>go("result"),1300); }
+function vote(k){ const first=!S.ch[Q[S.qi].id]; if(first&&k!=="X") S.justDone=Q[S.qi].id; S.ch[Q[S.qi].id]=k; S.pick=null; if(k!=="X"&&first) S.xp+=20; save(); if(k==="X"){ go("result"); return; } go("drop");
+  const n=Object.keys(S.ch).filter(x=>S.ch[x]!=="X").length, rm=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  setTimeout(()=>{ const e=document.getElementById("dzn"); if(e) e.textContent=String(n).padStart(5,"0"); }, rm?0:1150);
+  clearTimeout(window._dz); window._dz=setTimeout(()=>{ if(S.screen==="drop") go("result"); }, rm?900:2700); }
 function next(){ if(S.back==="parcours"){ S.back=null; go("parcours"); return; } const q=Q[S.qi], yd=Q.filter(x=>x.an===q.an).every(x=>S.ch[x.id]);
   if(yd&&S.seenYear<q.an){ S.seenYear=q.an; go("bilan"); return; } if(Q.findIndex(x=>!S.ch[x.id])<0){ go("verdict"); return; } go("map"); }
 function skipScene(el){ el.classList.add("skipped"); const s=el._rv; const t=s&&s.inst&&s.inst.trigger("skip"); if(t) t.trigger(); }
